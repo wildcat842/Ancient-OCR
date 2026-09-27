@@ -1,0 +1,1171 @@
+{
+ "snapshot": "gold-r01",
+ "items": [
+  "kim-p2-letter03"
+ ],
+ "image": "kim-p2-letter03.jpg",
+ "image_size": [
+  2111,
+  1394
+ ],
+ "reviewed_by": "u_4WDpzYqFrEgGdWr1MY_fZg",
+ "chars": [
+  {
+   "bbox": [
+    1795,
+    747,
+    1899,
+    890
+   ],
+   "conf": 0.5,
+   "flags": {
+    "rotated": false
+   },
+   "id": "00002",
+   "label": "BODY_CHAR",
+   "pid": "00002",
+   "rid": "R0.text_column_0",
+   "state": "corrected",
+   "text": "의"
+  },
+  {
+   "bbox": [
+    1616,
+    227,
+    1756,
+    440
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00003",
+   "label": "BODY_CHAR",
+   "pid": "00003",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "긔"
+  },
+  {
+   "bbox": [
+    1579,
+    475,
+    1760,
+    719
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00004",
+   "label": "BODY_CHAR",
+   "pid": "00004",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "후"
+  },
+  {
+   "bbox": [
+    1584,
+    720,
+    1739,
+    895
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00005",
+   "label": "BODY_CHAR",
+   "pid": "00005",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "평"
+  },
+  {
+   "bbox": [
+    1601,
+    911,
+    1719,
+    1052
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00006",
+   "label": "BODY_CHAR",
+   "pid": "00006",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "안"
+  },
+  {
+   "bbox": [
+    1601,
+    1070,
+    1706,
+    1216
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00007",
+   "label": "BODY_CHAR",
+   "pid": "00007",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "ᄒᆞ"
+  },
+  {
+   "bbox": [
+    1606,
+    1193,
+    1736,
+    1333
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00008",
+   "label": "BODY_CHAR",
+   "pid": "00008",
+   "rid": "R0.text_column_1",
+   "state": "corrected",
+   "text": "오"
+  },
+  {
+   "bbox": [
+    1445,
+    332,
+    1549,
+    505
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00009",
+   "label": "BODY_CHAR",
+   "pid": "00009",
+   "rid": "R0.text_column_2",
+   "state": "corrected",
+   "text": "신"
+  },
+  {
+   "bbox": [
+    1449,
+    529,
+    1547,
+    685
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00010",
+   "label": "BODY_CHAR",
+   "pid": "00010",
+   "rid": "R0.text_column_2",
+   "state": "corrected",
+   "text": "문"
+  },
+  {
+   "bbox": [
+    1439,
+    699,
+    1566,
+    800
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00011",
+   "label": "BODY_CHAR",
+   "pid": "00011",
+   "rid": "R0.text_column_2",
+   "state": "corrected",
+   "text": "안"
+  },
+  {
+   "bbox": [
+    1339,
+    656,
+    1444,
+    737
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00018",
+   "label": "BODY_CHAR",
+   "pid": "00018",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "오"
+  },
+  {
+   "bbox": [
+    1338,
+    724,
+    1430,
+    798
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00019",
+   "label": "BODY_CHAR",
+   "pid": "00019",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "며"
+  },
+  {
+   "bbox": [
+    1326,
+    835,
+    1402,
+    959
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00020",
+   "label": "BODY_CHAR",
+   "pid": "00020",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "뵈"
+  },
+  {
+   "bbox": [
+    1330,
+    978,
+    1419,
+    1111
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00021",
+   "label": "BODY_CHAR",
+   "pid": "00021",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "완"
+  },
+  {
+   "bbox": [
+    1333,
+    1124,
+    1403,
+    1249
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00022",
+   "label": "BODY_CHAR",
+   "pid": "00022",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "디"
+  },
+  {
+   "bbox": [
+    1321,
+    1270,
+    1416,
+    1357
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00023",
+   "label": "BODY_CHAR",
+   "pid": "00023",
+   "rid": "R0.text_column_3",
+   "state": "corrected",
+   "text": "오"
+  },
+  {
+   "bbox": [
+    1229,
+    403,
+    1328,
+    542
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00024",
+   "label": "BODY_CHAR",
+   "pid": "00024",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "래"
+  },
+  {
+   "bbox": [
+    1239,
+    556,
+    1338,
+    685
+   ],
+   "conf": 0.3,
+   "flags": {},
+   "id": "00025",
+   "label": "BODY_CHAR",
+   "pid": "00025",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "오"
+  },
+  {
+   "bbox": [
+    1239,
+    654,
+    1316,
+    785
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00026",
+   "label": "BODY_CHAR",
+   "pid": "00026",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "니"
+  },
+  {
+   "bbox": [
+    1217,
+    803,
+    1314,
+    982
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00027",
+   "label": "BODY_CHAR",
+   "pid": "00027",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "섭"
+  },
+  {
+   "bbox": [
+    1242,
+    986,
+    1281,
+    1053
+   ],
+   "conf": 0.5,
+   "flags": {
+    "repeat_mark": true
+   },
+   "id": "00028",
+   "label": "BODY_CHAR",
+   "pid": "00028",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "〃"
+  },
+  {
+   "bbox": [
+    1211,
+    1073,
+    1316,
+    1160
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00029",
+   "label": "BODY_CHAR",
+   "pid": "00029",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "그"
+  },
+  {
+   "bbox": [
+    1226,
+    1146,
+    1313,
+    1332
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00030",
+   "label": "BODY_CHAR",
+   "pid": "00030",
+   "rid": "R0.text_column_4",
+   "state": "corrected",
+   "text": "립"
+  },
+  {
+   "bbox": [
+    1135,
+    428,
+    1219,
+    503
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00031",
+   "label": "BODY_CHAR",
+   "pid": "00031",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "ᄉᆞ"
+  },
+  {
+   "bbox": [
+    1119,
+    510,
+    1222,
+    641
+   ],
+   "conf": 0.3,
+   "flags": {},
+   "id": "00032",
+   "label": "BODY_CHAR",
+   "pid": "00032",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "와"
+  },
+  {
+   "bbox": [
+    1106,
+    653,
+    1217,
+    816
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00033",
+   "label": "BODY_CHAR",
+   "pid": "00033",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "ᄒᆞ"
+  },
+  {
+   "bbox": [
+    1126,
+    803,
+    1206,
+    957
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00034",
+   "label": "BODY_CHAR",
+   "pid": "00034",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "ᄋᆞᆸ"
+  },
+  {
+   "bbox": [
+    1117,
+    924,
+    1204,
+    1055
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00035",
+   "label": "BODY_CHAR",
+   "pid": "00035",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "다"
+  },
+  {
+   "bbox": [
+    1117,
+    1085,
+    1205,
+    1223
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00036",
+   "label": "BODY_CHAR",
+   "pid": "00036",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "니"
+  },
+  {
+   "bbox": [
+    1105,
+    1230,
+    1190,
+    1357
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00037",
+   "label": "BODY_CHAR",
+   "pid": "00037",
+   "rid": "R0.text_column_5",
+   "state": "corrected",
+   "text": "어"
+  },
+  {
+   "bbox": [
+    990,
+    417,
+    1135,
+    570
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00038",
+   "label": "BODY_CHAR",
+   "pid": "00038",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "제"
+  },
+  {
+   "bbox": [
+    1025,
+    602,
+    1106,
+    764
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00039",
+   "label": "BODY_CHAR",
+   "pid": "00039",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "봉"
+  },
+  {
+   "bbox": [
+    1012,
+    763,
+    1138,
+    910
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00040",
+   "label": "BODY_CHAR",
+   "pid": "00040",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "셔"
+  },
+  {
+   "bbox": [
+    1002,
+    945,
+    1117,
+    1064
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00041",
+   "label": "BODY_CHAR",
+   "pid": "00041",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "보"
+  },
+  {
+   "bbox": [
+    1020,
+    1077,
+    1102,
+    1200
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00042",
+   "label": "BODY_CHAR",
+   "pid": "00042",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "ᄋᆞᆸ"
+  },
+  {
+   "bbox": [
+    1001,
+    1210,
+    1107,
+    1351
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00043",
+   "label": "BODY_CHAR",
+   "pid": "00043",
+   "rid": "R0.text_column_6",
+   "state": "corrected",
+   "text": "고"
+  },
+  {
+   "bbox": [
+    911,
+    437,
+    1005,
+    563
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00044",
+   "label": "BODY_CHAR",
+   "pid": "00044",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "든"
+  },
+  {
+   "bbox": [
+    896,
+    583,
+    1018,
+    710
+   ],
+   "conf": 0.5,
+   "flags": {
+    "repeat_mark": true
+   },
+   "id": "00045",
+   "label": "BODY_CHAR",
+   "pid": "00045",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "〃"
+  },
+  {
+   "bbox": [
+    911,
+    723,
+    1017,
+    871
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00046",
+   "label": "BODY_CHAR",
+   "pid": "00046",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "반"
+  },
+  {
+   "bbox": [
+    911,
+    889,
+    1022,
+    1065
+   ],
+   "conf": 0.3,
+   "flags": {},
+   "id": "00047",
+   "label": "BODY_CHAR",
+   "pid": "00047",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "갑"
+  },
+  {
+   "bbox": [
+    919,
+    1061,
+    998,
+    1184
+   ],
+   "conf": 0.3,
+   "flags": {},
+   "id": "00048",
+   "label": "BODY_CHAR",
+   "pid": "00048",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "ᄉᆞ"
+  },
+  {
+   "bbox": [
+    881,
+    1201,
+    1001,
+    1342
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00049",
+   "label": "BODY_CHAR",
+   "pid": "00049",
+   "rid": "R0.text_column_7",
+   "state": "corrected",
+   "text": "와"
+  },
+  {
+   "bbox": [
+    752,
+    462,
+    870,
+    608
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00050",
+   "label": "BODY_CHAR",
+   "pid": "00050",
+   "rid": "R0.text_column_8",
+   "state": "corrected",
+   "text": "ᄒᆞ"
+  },
+  {
+   "bbox": [
+    760,
+    600,
+    869,
+    706
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00051",
+   "label": "BODY_CHAR",
+   "pid": "00051",
+   "rid": "R0.text_column_8",
+   "state": "corrected",
+   "text": "오"
+  },
+  {
+   "bbox": [
+    734,
+    717,
+    853,
+    856
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00052",
+   "label": "BODY_CHAR",
+   "pid": "00052",
+   "rid": "R0.text_column_8",
+   "state": "corrected",
+   "text": "며"
+  },
+  {
+   "bbox": [
+    587,
+    347,
+    746,
+    495
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00053",
+   "label": "BODY_CHAR",
+   "pid": "00053",
+   "rid": "R0.text_column_9",
+   "state": "corrected",
+   "text": "한"
+  },
+  {
+   "bbox": [
+    611,
+    528,
+    748,
+    661
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00054",
+   "label": "BODY_CHAR",
+   "pid": "00054",
+   "rid": "R0.text_column_9",
+   "state": "corrected",
+   "text": "아"
+  },
+  {
+   "bbox": [
+    609,
+    673,
+    738,
+    837
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00055",
+   "label": "BODY_CHAR",
+   "pid": "00055",
+   "rid": "R0.text_column_9",
+   "state": "corrected",
+   "text": "바"
+  },
+  {
+   "bbox": [
+    635,
+    819,
+    745,
+    986
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00056",
+   "label": "BODY_CHAR",
+   "pid": "00056",
+   "rid": "R0.text_column_9",
+   "state": "corrected",
+   "text": "님"
+  },
+  {
+   "bbox": [
+    758,
+    1213,
+    862,
+    1358
+   ],
+   "conf": 0.4,
+   "flags": {
+    "inserted": true
+   },
+   "id": "00060",
+   "label": "INSERTED_CHAR",
+   "pid": "00060",
+   "rid": "R0.text_column_9",
+   "state": "corrected",
+   "text": "셔"
+  },
+  {
+   "bbox": [
+    338,
+    700,
+    468,
+    904
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00070",
+   "label": "BODY_CHAR",
+   "pid": "00070",
+   "rid": "R0.text_column_11",
+   "state": "corrected",
+   "text": "깃"
+  },
+  {
+   "bbox": [
+    303,
+    916,
+    460,
+    1066
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00071",
+   "label": "BODY_CHAR",
+   "pid": "00071",
+   "rid": "R0.text_column_11",
+   "state": "corrected",
+   "text": "브"
+  },
+  {
+   "bbox": [
+    312,
+    1075,
+    467,
+    1242
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00072",
+   "label": "BODY_CHAR",
+   "pid": "00072",
+   "rid": "R0.text_column_11",
+   "state": "corrected",
+   "text": "와"
+  },
+  {
+   "bbox": [
+    242,
+    409,
+    323,
+    581
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00073",
+   "label": "BODY_CHAR",
+   "pid": "00073",
+   "rid": "R0.text_column_12",
+   "state": "corrected",
+   "text": "ᄒᆞ"
+  },
+  {
+   "bbox": [
+    231,
+    570,
+    339,
+    756
+   ],
+   "conf": 0.4,
+   "flags": {
+    "deleted": true
+   },
+   "id": "00074",
+   "label": "DELETED_MARK",
+   "pid": "00074",
+   "rid": "R0.text_column_12",
+   "state": "corrected",
+   "text": "∎"
+  },
+  {
+   "bbox": [
+    237,
+    761,
+    305,
+    878
+   ],
+   "conf": 0.4,
+   "flags": {
+    "deleted": true
+   },
+   "id": "00075",
+   "label": "DELETED_MARK",
+   "pid": "00075",
+   "rid": "R0.text_column_12",
+   "state": "corrected",
+   "text": "∎"
+  },
+  {
+   "bbox": [
+    219,
+    904,
+    293,
+    1036
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00076",
+   "label": "BODY_CHAR",
+   "pid": "00076",
+   "rid": "R0.text_column_12",
+   "state": "corrected",
+   "text": "ᄋᆞᆸ"
+  },
+  {
+   "bbox": [
+    97,
+    406,
+    236,
+    638
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00079",
+   "label": "BODY_CHAR",
+   "pid": "00079",
+   "rid": "R0.text_column_13",
+   "state": "corrected",
+   "text": "다"
+  },
+  {
+   "bbox": [
+    15,
+    932,
+    248,
+    1115
+   ],
+   "conf": 0.5,
+   "flags": {},
+   "id": "00081",
+   "label": "BODY_CHAR",
+   "pid": "00081",
+   "rid": "R0.text_column_14",
+   "state": "corrected",
+   "text": "孫"
+  }
+ ],
+ "regions": [
+  {
+   "attrs": {},
+   "bbox": [
+    183,
+    203,
+    322,
+    1394
+   ],
+   "id": "R0.text_column_12",
+   "label": "TEXT_COLUMN",
+   "parent": "R0.letter_0",
+   "state": "corrected",
+   "text": "ᄒᆞ∎∎ᄋᆞᆸᄂᆞ이"
+  },
+  {
+   "attrs": {
+    "role": "signature"
+   },
+   "bbox": [
+    50,
+    772,
+    204,
+    1151
+   ],
+   "id": "R0.text_column_14",
+   "label": "SIGNATURE",
+   "parent": "R0.letter_0",
+   "state": "corrected",
+   "text": "元孫"
+  },
+  {
+   "attrs": {
+    "kind": "decoration"
+   },
+   "bbox": [
+    1965,
+    725,
+    2009,
+    831
+   ],
+   "id": "R0.paper_decoration_1",
+   "label": "PAPER_DECORATION",
+   "parent": "R0.letter_0",
+   "state": "corrected",
+   "text": ""
+  },
+  {
+   "attrs": {
+    "kind": "decoration"
+   },
+   "bbox": [
+    1893,
+    947,
+    2080,
+    1206
+   ],
+   "id": "R0.paper_decoration_2",
+   "label": "PAPER_DECORATION",
+   "parent": "R0.letter_0",
+   "state": "corrected",
+   "text": ""
+  }
+ ],
+ "excluded_unreviewed": [
+  {
+   "id": "00000",
+   "text": "상",
+   "rid": "R0.text_column_0"
+  },
+  {
+   "id": "00001",
+   "text": "풍",
+   "rid": "R0.text_column_0"
+  },
+  {
+   "id": "00012",
+   "text": "아",
+   "rid": "R0.text_column_2"
+  },
+  {
+   "id": "00013",
+   "text": "ᄋᆞᆸ",
+   "rid": "R0.text_column_2"
+  },
+  {
+   "id": "00014",
+   "text": "고",
+   "rid": "R0.text_column_2"
+  },
+  {
+   "id": "00015",
+   "text": "져",
+   "rid": "R0.text_column_2"
+  },
+  {
+   "id": "00016",
+   "text": "ᄇᆞ",
+   "rid": "R0.text_column_3"
+  },
+  {
+   "id": "00017",
+   "text": "라",
+   "rid": "R0.text_column_3"
+  },
+  {
+   "id": "00057",
+   "text": "겨",
+   "rid": "R0.text_column_9"
+  },
+  {
+   "id": "00058",
+   "text": "오",
+   "rid": "R0.text_column_9"
+  },
+  {
+   "id": "00059",
+   "text": "도",
+   "rid": "R0.text_column_9"
+  },
+  {
+   "id": "00061",
+   "text": "평",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00062",
+   "text": "안",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00063",
+   "text": "ᄒᆞ",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00064",
+   "text": "오",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00065",
+   "text": "시",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00066",
+   "text": "다",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00067",
+   "text": "ᄒᆞ",
+   "rid": "R0.text_column_10"
+  },
+  {
+   "id": "00068",
+   "text": "온",
+   "rid": "R0.text_column_11"
+  },
+  {
+   "id": "00069",
+   "text": "니",
+   "rid": "R0.text_column_11"
+  },
+  {
+   "id": "00077",
+   "text": "ᄂᆞ",
+   "rid": "R0.text_column_12"
+  },
+  {
+   "id": "00078",
+   "text": "이",
+   "rid": "R0.text_column_12"
+  },
+  {
+   "id": "00080",
+   "text": "元",
+   "rid": "R0.text_column_14"
+  },
+  {
+   "id": "00082",
+   "text": "叔",
+   "rid": "R0.envelope_text_0"
+  },
+  {
+   "id": "00083",
+   "text": "母",
+   "rid": "R0.envelope_text_0"
+  },
+  {
+   "id": "00084",
+   "text": "主",
+   "rid": "R0.envelope_text_0"
+  },
+  {
+   "id": "00085",
+   "text": "前",
+   "rid": "R0.envelope_text_0"
+  }
+ ]
+}

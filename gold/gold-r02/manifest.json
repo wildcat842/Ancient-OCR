@@ -1,0 +1,36 @@
+{
+ "snapshot": "gold-r02",
+ "created": "2026-09-19",
+ "content_hash": "dc81c5585e34",
+ "source_artifact": "S2 편집기 annotations",
+ "items": [
+  "kim-p2-letter03",
+  "kim-p2-letter01",
+  "kim-p2-letter02",
+  "kim-p2-letter04"
+ ],
+ "split": {
+  "kim-p2-letter02": "eval",
+  "kim-p2-letter01": "train",
+  "kim-p2-letter03": "train",
+  "kim-p2-letter04": "train"
+ },
+ "split_note": "eval = 편지 2 (고정, 학습에 쓰지 않음). 편지 13 검수 후 eval 추가 여부 결정",
+ "counts": {
+  "chars": 264,
+  "train": 234,
+  "eval": 30,
+  "lines_complete": 33,
+  "glyph_classes": 88
+ },
+ "normalization": "NFC (옛한글은 첫가끝 조합형 유지)",
+ "annotator_ids": [
+  "u_4WDpzYqFrEgGdWr1MY_fZg"
+ ],
+ "excluded": "확정하지 않은 제안(편지 3의 27자)은 제외",
+ "proposers": {
+  "v0.7": "규칙: 행 등분",
+  "v0.8": "넓은 행 나누기 + DP",
+  "v0.9": "행 끝 정리 + 정답 예시 검색"
+ }
+}

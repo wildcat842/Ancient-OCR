@@ -1,0 +1,105 @@
+[
+ {
+  "item": "kim-p2-letter03",
+  "title": "편지 3",
+  "pdf_page": 14,
+  "round": 1,
+  "split": "train",
+  "chars": 86,
+  "gold": 59,
+  "accepted": 0,
+  "corrected": 59,
+  "accept_rate": 0.0,
+  "review_min": null,
+  "min_per_100": null,
+  "text_edits": 0,
+  "proposers": {
+   "v0.7": {
+    "mean_iou": 0.134,
+    "iou50": 0.119,
+    "iou70": 0.051
+   }
+  }
+ },
+ {
+  "item": "kim-p2-letter01",
+  "title": "편지 1",
+  "pdf_page": 12,
+  "round": 2,
+  "split": "train",
+  "chars": 40,
+  "gold": 40,
+  "accepted": 25,
+  "corrected": 15,
+  "accept_rate": 0.625,
+  "review_min": 14.2,
+  "min_per_100": 35.5,
+  "text_edits": 0,
+  "proposers": {
+   "v0.8": {
+    "mean_iou": 0.093,
+    "iou50": 0.05,
+    "iou70": 0.025
+   },
+   "v0.9": {
+    "mean_iou": 0.111,
+    "iou50": 0.1,
+    "iou70": 0.025
+   }
+  }
+ },
+ {
+  "item": "kim-p2-letter02",
+  "title": "편지 2",
+  "pdf_page": 13,
+  "round": 2,
+  "split": "eval",
+  "chars": 30,
+  "gold": 30,
+  "accepted": 10,
+  "corrected": 20,
+  "accept_rate": 0.333,
+  "review_min": 4.0,
+  "min_per_100": 13.3,
+  "text_edits": 0,
+  "proposers": {
+   "v0.8": {
+    "mean_iou": 0.37,
+    "iou50": 0.333,
+    "iou70": 0.1
+   },
+   "v0.9": {
+    "mean_iou": 0.395,
+    "iou50": 0.4,
+    "iou70": 0.167
+   }
+  }
+ },
+ {
+  "item": "kim-p2-letter04",
+  "title": "편지 4",
+  "pdf_page": 15,
+  "round": 2,
+  "split": "train",
+  "chars": 135,
+  "gold": 135,
+  "accepted": 103,
+  "corrected": 32,
+  "accept_rate": 0.763,
+  "review_min": 12.2,
+  "min_per_100": 9.0,
+  "text_edits": 0,
+  "proposers": {
+   "v0.8": {
+    "mean_iou": 0.117,
+    "iou50": 0.141,
+    "iou70": 0.096
+   },
+   "v0.9": {
+    "mean_iou": 0.777,
+    "iou50": 0.867,
+    "iou70": 0.719
+   }
+  }
+ }
+]

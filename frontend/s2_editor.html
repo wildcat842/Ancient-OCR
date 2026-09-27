@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S2 아노테이션 편집기 · HanOCR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --panel:#FFFFFF; --panel-2:#F6F8FA; --line:#D5DBE2; --ink:#1C232B; --ink-2:#56616D; --ink-3:#8A95A1;
+  --indigo:#2F4B8A; --indigo-soft:#E4EAF6;
+  --ok:#2E8B57; --mid:#C98A12; --low:#C8413B; --human:#2F4B8A;
+  --stage:#2A2F35; --focus:#2F4B8A;
+  --ui:'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', system-ui, sans-serif;
+  --glyph:'Noto Serif KR', 'Nanum Myeongjo', 'Batang', 'Apple SD Gothic Neo', serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171B20; --panel:#1F242B; --panel-2:#252B33; --line:#343C46; --ink:#E6EAEE; --ink-2:#A9B3BE; --ink-3:#7C8794;
+    --indigo:#8FA8E0; --indigo-soft:#27324A; --ok:#5BBE86; --mid:#E0AE45; --low:#E77069; --human:#8FA8E0; --stage:#0F1215;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171B20; --panel:#1F242B; --panel-2:#252B33; --line:#343C46; --ink:#E6EAEE; --ink-2:#A9B3BE; --ink-3:#7C8794;
+  --indigo:#8FA8E0; --indigo-soft:#27324A; --ok:#5BBE86; --mid:#E0AE45; --low:#E77069; --human:#8FA8E0; --stage:#0F1215;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--ui);overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--ink-3)}
+button:focus-visible,select:focus-visible,input:focus-visible,.chip:focus-visible,.tile:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+button.primary{background:var(--indigo);border-color:var(--indigo);color:#fff}
+:root[data-theme="dark"] button.primary{color:#10151C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#10151C}}
+button[aria-pressed="true"]{background:var(--indigo-soft);border-color:var(--indigo);color:var(--indigo)}
+kbd{font:12px var(--ui);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;color:var(--ink-2);background:var(--panel-2)}
+
+.app{display:grid;height:100vh;grid-template-columns:230px minmax(0,1fr) 340px;grid-template-rows:48px minmax(0,1fr) 118px 46px;
+  grid-template-areas:"top top top" "left stage right" "left strip right" "foot foot foot"}
+header.top{grid-area:top;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+.crumb{display:flex;align-items:baseline;gap:10px;min-width:0}
+.crumb b{font-weight:600;white-space:nowrap}
+.crumb span{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modes{display:flex;gap:4px;margin-left:auto}
+.save{font-size:12px;color:var(--ink-2);min-width:120px;text-align:right}
+.save.err{color:var(--low)}
+
+aside.left{grid-area:left;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside.left h3,aside.right h3{font-size:12px;font-weight:600;color:var(--ink-2);margin:12px 12px 6px}
+.items{padding:0 8px;display:flex;flex-direction:column;gap:4px}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 6px;text-align:left;padding:7px 8px;border-radius:6px;border:1px solid transparent;background:none}
+.item[aria-current="true"]{background:var(--indigo-soft);border-color:var(--indigo)}
+.item small{grid-column:1/-1;color:var(--ink-3);font-size:11.5px}
+.badge{font-size:11px;padding:1px 6px;border-radius:9px;border:1px solid var(--line);color:var(--ink-2);align-self:start}
+.badge.done{border-color:var(--ok);color:var(--ok)}
+.badge.wip{border-color:var(--mid);color:var(--mid)}
+.tree{overflow:auto;flex:1;padding:0 6px 10px;font-size:12.5px}
+.tree button{display:flex;width:100%;gap:6px;align-items:center;border:none;background:none;padding:3px 6px;border-radius:4px;text-align:left}
+.tree button[aria-current="true"]{background:var(--indigo-soft);color:var(--indigo)}
+.tree .lbl{color:var(--ink-3);font-size:11px;min-width:68px}
+.tree .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--glyph)}
+.tree .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.filebox{border-top:1px solid var(--line);padding:10px 12px;font-size:12px;color:var(--ink-2)}
+.filebox input{font-size:11.5px;max-width:100%}
+
+main.stage{grid-area:stage;position:relative;background:var(--stage);overflow:hidden;cursor:grab;touch-action:none}
+main.stage.panning{cursor:grabbing}
+main.stage.drawing{cursor:crosshair}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+.world img{display:block;user-select:none;-webkit-user-drag:none}
+.world svg{position:absolute;left:0;top:0;overflow:visible}
+.stagebar{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px}
+.stagebar label{display:flex;gap:4px;align-items:center;color:var(--ink-2)}
+.legend{position:absolute;right:10px;bottom:10px;display:flex;gap:10px;font-size:11.5px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:8px;padding:5px 9px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border:2px solid;margin-right:4px;vertical-align:-1px}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:#C9D1DA;text-align:center;padding:30px;pointer-events:none}
+
+/* 박스 */
+.bx{fill:transparent;stroke-width:var(--sw,2);vector-effect:non-scaling-stroke}
+.bx.hi{stroke:var(--ok)} .bx.md{stroke:var(--mid)} .bx.lo{stroke:var(--low);stroke-dasharray:5 3}
+.bx.human{stroke:var(--human);stroke-dasharray:none}
+.bx.acc{stroke:var(--ok);stroke-dasharray:none;fill:color-mix(in srgb,var(--ok) 8%,transparent)}
+.bx.faint{opacity:.28;pointer-events:none}
+.bx.sel{stroke:#FFD24A;stroke-width:3;fill:color-mix(in srgb,#FFD24A 14%,transparent)}
+.bx.region{stroke:#9CC3FF;stroke-dasharray:8 4}
+.bx.line{stroke:#7FB0FF}
+.bx.ghost{stroke:#FFFFFF;stroke-dasharray:3 3;opacity:.6;pointer-events:none}
+.hd{fill:#FFD24A;stroke:#2A2F35;vector-effect:non-scaling-stroke;stroke-width:1}
+.hd.h0,.hd.h4{cursor:nwse-resize} .hd.h2,.hd.h6{cursor:nesw-resize} .hd.h1,.hd.h5{cursor:ns-resize} .hd.h3,.hd.h7{cursor:ew-resize}
+.bx{cursor:pointer} .bx.sel{cursor:move}
+.boxed{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.boxed input{width:100%;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:var(--panel-2);font-variant-numeric:tabular-nums}
+.boxed small{color:var(--ink-3);font-size:10.5px;text-align:center}
+.nudge{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.nudge button{padding:2px 7px;font-size:12px}
+.tag{font:600 13px var(--glyph);fill:#FFD24A;paint-order:stroke;stroke:#1A1E22;stroke-width:3px;pointer-events:none}
+.tag.small{font-size:11px;fill:#DDE6F2}
+
+aside.right{grid-area:right;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;gap:4px;padding:10px 12px 0}
+.transcript{flex:1;overflow:auto;padding:4px 10px 10px;min-height:0}
+.lrow{display:grid;grid-template-columns:34px 1fr;gap:6px;padding:6px 4px;border-bottom:1px dashed var(--line)}
+.lrow[aria-current="true"]{background:var(--indigo-soft);border-radius:6px}
+.lno{font-size:11px;color:var(--ink-3);padding-top:4px;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.chip{font:500 16px/1 var(--glyph);min-width:26px;padding:5px 4px 4px;text-align:center;border-radius:5px;border:1.5px solid transparent;background:var(--panel-2);cursor:pointer}
+.chip.hi{border-color:color-mix(in srgb,var(--ok) 55%,transparent)} .chip.md{border-color:var(--mid)} .chip.lo{border-color:var(--low);border-style:dashed}
+.chip.human{border-color:var(--human)} .chip.acc{background:color-mix(in srgb,var(--ok) 16%,var(--panel-2));border-color:var(--ok)}
+.chip.sel{outline:2px solid #E0A800;outline-offset:1px}
+.chip.nobox{opacity:.6;text-decoration:underline wavy var(--low)}
+.brk{border:none;background:none;padding:2px 3px;color:var(--ink-3);font-size:12px;border-radius:4px}
+.brk:hover{color:var(--indigo);background:var(--indigo-soft)}
+.aux{font-size:12px;color:var(--ink-2);margin:2px 0 0;grid-column:2}
+.attrs{border-top:1px solid var(--line);padding:8px 12px 12px;max-height:46%;overflow:auto}
+.fld{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:center;margin:5px 0;font-size:12.5px}
+.fld>span{color:var(--ink-2)}
+.fld input[type=text],.fld select{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--panel-2)}
+.fld input.val{font:600 20px var(--glyph);padding:4px 8px}
+.flags{display:flex;flex-wrap:wrap;gap:8px 12px}
+.flags label{display:flex;gap:4px;align-items:center}
+.meta{font-size:11.5px;color:var(--ink-3)}
+
+section.strip{grid-area:strip;background:var(--panel);border-top:1px solid var(--line);display:flex;gap:8px;align-items:stretch;padding:8px 10px;overflow-x:auto}
+.strip .hint{align-self:center;color:var(--ink-3);font-size:12px;white-space:nowrap;padding-right:6px}
+.tile{flex:none;width:70px;display:flex;flex-direction:column;align-items:center;gap:3px;border:1.5px solid var(--line);border-radius:7px;padding:4px;background:var(--panel-2);cursor:pointer}
+.tile canvas{width:60px;height:60px;background:#fff;border-radius:3px}
+.tile b{font:600 15px var(--glyph)}
+.tile .bar{width:100%;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.tile .bar i{display:block;height:100%}
+.tile.sel{border-color:#E0A800;box-shadow:0 0 0 2px color-mix(in srgb,#E0A800 35%,transparent)}
+.tile.acc{border-color:var(--ok)} .tile.human{border-color:var(--human)}
+
+footer.foot{grid-area:foot;display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--panel);border-top:1px solid var(--line);overflow-x:auto}
+footer.foot .sp{flex:1}
+footer.foot .count{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.help{position:fixed;inset:auto 16px 66px auto;width:340px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.25);font-size:12.5px;display:none;z-index:5}
+.help.open{display:block}
+.help dl{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin:6px 0 0}
+.help dt{white-space:nowrap}
+.toast{position:fixed;left:50%;top:58px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:7px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:6}
+.toast.on{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(10,14,20,.45);display:grid;place-items:center;z-index:9}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.mbox p{margin:0 0 14px;line-height:1.6}
+.mact{display:flex;gap:8px;justify-content:flex-end}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+@media (max-width: 1000px){
+  .app{grid-template-columns:1fr;grid-template-rows:48px 50vh auto 118px auto 46px;grid-template-areas:"top" "stage" "right" "strip" "left" "foot";overflow:auto;height:auto}
+  body{overflow:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="crumb"><b id="itemTitle">항목을 고르세요</b><span id="itemMeta"></span></div>
+    <div class="modes" role="group" aria-label="편집 모드">
+      <button id="m-region" data-mode="region" aria-pressed="false" title="영역 모드 (1)">영역</button>
+      <button id="m-line" data-mode="line" aria-pressed="false" title="행 모드 (2)">행</button>
+      <button id="m-char" data-mode="char" aria-pressed="true" title="글자 모드 (3)">글자</button>
+    </div>
+    <div class="save" id="saveState" aria-live="polite"></div>
+    <button id="themeBtn" title="밝기 전환">◐</button>
+  </header>
+
+  <aside class="left" aria-label="작업 항목과 구조">
+    <h3>작업 항목</h3>
+    <div class="items" id="items"></div>
+    <h3>구조</h3>
+    <div class="tree" id="tree"></div>
+    <div class="filebox">
+      <div style="margin-bottom:4px">내 파일로 작업 (저장소에는 올리지 않음)</div>
+      <label>이미지 <input type="file" id="fImg" accept="image/*"></label><br>
+      <label>라벨 JSON <input type="file" id="fJson" accept=".json,application/json"></label>
+    </div>
+  </aside>
+
+  <main class="stage" id="stage" aria-label="이미지와 상자">
+    <div class="world" id="world"><img id="img" alt=""><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="empty" id="empty">왼쪽에서 작업 항목을 고르면 이미지와 제안 상자가 나타납니다.</div>
+    <div class="stagebar">
+      <button id="zoomOut" title="축소 (-)">−</button><span id="zoomLbl">100%</span><button id="zoomIn" title="확대 (+)">+</button>
+      <button id="fitBtn" title="화면 맞춤 (0)">맞춤</button>
+      <label><input type="checkbox" id="lyRegion" checked>영역</label>
+      <label><input type="checkbox" id="lyLine" checked>행</label>
+      <label><input type="checkbox" id="lyChar" checked>글자</label>
+      <label><input type="checkbox" id="lyTag">값</label>
+      <label><input type="checkbox" id="lyGhost">제안 원본</label>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span><i style="border-color:var(--ok)"></i>확신</span><span><i style="border-color:var(--mid)"></i>보통</span>
+      <span><i style="border-color:var(--low);border-style:dashed"></i>불확실</span><span><i style="border-color:var(--human)"></i>사람 수정</span>
+    </div>
+  </main>
+
+  <aside class="right" aria-label="판독문 정렬과 속성">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tt="text" aria-pressed="true">판독문</button>
+      <button role="tab" data-tt="annot" aria-pressed="false">주석문</button>
+      <button role="tab" data-tt="modern" aria-pressed="false">현대어역</button>
+    </div>
+    <div class="transcript" id="transcript"></div>
+    <div class="attrs" id="attrs"></div>
+  </aside>
+
+  <section class="strip" id="strip" aria-label="선택한 행의 글자"></section>
+
+  <footer class="foot">
+    <button id="undoBtn" title="되돌리기 (Ctrl+Z)">되돌리기</button>
+    <button id="drawBtn" aria-pressed="false" title="새 상자 그리기 (N)">새 상자</button>
+    <button id="mergeBtn" title="다음 글자와 합치기 (M)">합치기</button>
+    <button id="splitBtn" title="둘로 나누기 (S)">나누기</button>
+    <button id="delBtn" title="지우기 (Delete)">지우기</button>
+    <button id="resplitBtn" title="이 행 상자 다시 나누기 (R)">행 다시 나누기</button>
+    <button id="acceptLineBtn" title="이 행 모두 확정 (A)">이 행 모두 확정</button>
+    <label style="display:flex;gap:4px;align-items:center;font-size:12.5px;white-space:nowrap" title="글자나 행 상자를 고치면, 그 행에서 아직 확정하지 않은 글자를 고친 상자 기준으로 다시 맞춥니다"><input type="checkbox" id="autoProp" checked>고치면 나머지 자동 맞춤</label>
+    <span class="sp"></span>
+    <span class="count" id="counts"></span>
+    <button id="helpBtn" title="단축키 (?)">단축키</button>
+    <button id="exportBtn">JSON 내보내기</button>
+    <button id="submitBtn" class="primary">검수 완료로 제출</button>
+  </footer>
+</div>
+
+<div class="help" id="help" role="dialog" aria-label="단축키">
+  <b>단축키</b>
+  <dl>
+    <dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>영역 · 행 · 글자 모드</dd>
+    <dt><kbd>↓</kbd><kbd>→</kbd> / <kbd>↑</kbd><kbd>←</kbd></dt><dd>다음 · 이전 글자 (행 모드에서는 행)</dd>
+    <dt><kbd>Tab</kbd> / <kbd>Shift</kbd><kbd>Tab</kbd></dt><dd>다음 · 이전 행</dd>
+    <dt><kbd>Enter</kbd></dt><dd>선택 글자 확정하고 다음으로</dd>
+    <dt><kbd>E</kbd></dt><dd>글자 값 입력칸으로</dd>
+    <dt><kbd>A</kbd></dt><dd>이 행 모두 확정</dd>
+    <dt><kbd>M</kbd> / <kbd>S</kbd></dt><dd>다음 글자와 합치기 / 둘로 나누기</dd>
+    <dt><kbd>N</kbd></dt><dd>새 상자 그리기 (끌어서)</dd>
+    <dt><kbd>R</kbd></dt><dd>행 상자 다시 나누기 (글자 값은 유지)</dd>
+    <dt><kbd>[</kbd> / <kbd>]</kbd></dt><dd>행 끝 글자를 다음 행으로 / 다음 행 첫 글자를 이 행으로</dd>
+    <dt><kbd>Shift</kbd>+화살표</dt><dd>상자 크기: 오른쪽·아래 변을 늘이고 줄임</dd>
+    <dt><kbd>Shift</kbd><kbd>Alt</kbd>+화살표</dt><dd>상자 크기: 왼쪽·위 변을 옮김</dd>
+    <dt><kbd>Alt</kbd>+화살표</dt><dd>상자 옮기기</dd>
+    <dt><kbd>T</kbd></dt><dd>상자를 먹 자국에 딱 맞추기</dd>
+    <dt><kbd>Delete</kbd></dt><dd>지우기</dd>
+    <dt><kbd>Ctrl</kbd><kbd>Z</kbd></dt><dd>되돌리기</dd>
+    <dt><kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> <kbd>F</kbd></dt><dd>확대 · 축소 · 맞춤 · 선택으로 이동</dd>
+    <dt>끌기</dt><dd>빈 곳은 화면 이동, 상자는 옮기기, 노란 네모 8개를 끌면 크기 조절(모서리는 두 변, 가운데는 한 변), 휠은 확대. 오른쪽 '상자' 칸에 숫자를 넣어도 됩니다.</dd>
+  </dl>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalMsg">
+  <div class="mbox"><p id="modalMsg"></p><div class="mact"><button id="modalNo">취소</button><button id="modalYes" class="primary">계속</button></div></div>
+</div>
+
+<script>
+"use strict";
+/* ─────────────── 상수·상태 ─────────────── */
+const LINE_LABELS = new Set(["TEXT_COLUMN","DOC_HEADER","DATE_LINE","SIGNATURE","SECTION_TITLE","ENVELOPE_TEXT","NOTE_LINE"]);
+const TOP_LABELS = new Set(["LETTER","DOCUMENT","BOOK_PAGE","FIGURE"]);
+const REGION_LABELS = ["LETTER","DOCUMENT","BOOK_PAGE","TEXT_COLUMN","DOC_HEADER","DATE_LINE","SIGNATURE","SECTION_TITLE","ENVELOPE_TEXT","NOTE_LINE","PAPER_DECORATION","FIGURE","FIGURE_LABEL","MARGIN_TEXT"];
+const REGION_KO = {LETTER:"편지",DOCUMENT:"고문서",BOOK_PAGE:"책 면",TEXT_COLUMN:"본문 행",DOC_HEADER:"머리 행",DATE_LINE:"연기 행",SIGNATURE:"서명",SECTION_TITLE:"책 속 제목",ENVELOPE_TEXT:"봉투 글씨",NOTE_LINE:"협주 반행",PAPER_DECORATION:"문양·인장",FIGURE:"도판",FIGURE_LABEL:"도판 표기",MARGIN_TEXT:"난외 표기"};
+const CHAR_LABELS = {BODY_CHAR:"본문 글자",NOTE_CHAR:"작은 글자",INSERTED_CHAR:"삽입 글자",DELETED_MARK:"삭제 표시",ENVELOPE_CHAR:"봉투 글자",FIGURE_CHAR:"도판 글자",MARGIN_CHAR:"난외 글자"};
+const seg = (typeof Intl !== "undefined" && Intl.Segmenter) ? new Intl.Segmenter("ko", {granularity:"grapheme"}) : null;
+const graphemes = s => seg ? Array.from(seg.segment(s || ""), x => x.segment) : Array.from(s || "");
+
+const S = {
+  db:null, downloads:null, userId:null, canWrite:true,
+  items:[], statusById:{}, cur:null, prop:null,
+  mode:"char", sel:null, undo:[], tt:"text",
+  view:{s:1, tx:0, ty:0}, draw:false, dirty:false, saveTimer:null, local:false
+};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function askConfirm(msg, yes){
+  return new Promise(res => {
+    const m = $("modal"); $("modalMsg").textContent = msg; $("modalYes").textContent = yes || "계속"; m.hidden = false; $("modalYes").focus();
+    const done = v => { m.hidden = true; $("modalYes").onclick = $("modalNo").onclick = null; document.removeEventListener("keydown", key, true); res(v); };
+    const key = e => { if (e.key === "Escape") { e.stopPropagation(); done(false); } };
+    document.addEventListener("keydown", key, true);
+    $("modalYes").onclick = () => done(true); $("modalNo").onclick = () => done(false);
+  });
+}
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("on"),1800); }
+
+/* ─────────────── 데이터 모양 ───────────────
+ items/<id>       : 기계 제안 (변경하지 않음)
+ annotations/<id> : 사람 검수본 {regions, chars, history, status, updatedAt, updatedBy, proposalSource}
+ 글자 state: proposed(제안) → accepted(그대로 확정) / corrected(사람이 고침) */
+function initFromProposal(item){
+  return {
+    itemId:item.id, proposalSource:item.source||"",
+    regions: item.regions.map(r => ({...r, bbox:r.bbox?[...r.bbox]:null, attrs:{...(r.attrs||{})}, state:"proposed"})),
+    chars: item.chars.map(c => ({...c, bbox:c.bbox?[...c.bbox]:null, flags:{...(c.flags||{})}, state:"proposed", pid:c.id})),
+    history:[], status:"in_progress"
+  };
+}
+const A = () => S.cur;
+const lines = () => A().regions.filter(r => LINE_LABELS.has(r.label));
+const charsOf = rid => A().chars.filter(c => c.rid === rid);
+const regionById = id => A().regions.find(r => r.id === id);
+const charById = id => A().chars.find(c => c.id === id);
+function confClass(c){
+  if (c.state === "accepted") return "acc";
+  if (c.state === "corrected") return "human";
+  const v = c.conf ?? .5; return v >= .8 ? "hi" : v >= .5 ? "md" : "lo";
+}
+let idSeq = 0;
+const newId = p => `${p}${Date.now().toString(36)}${(idSeq++).toString(36)}`;
+
+/* ─────────────── 되돌리기·이력·저장 ─────────────── */
+function snapshot(){ S.undo.push(JSON.stringify({regions:A().regions, chars:A().chars})); if (S.undo.length > 80) S.undo.shift(); }
+function undo(){
+  if (!S.undo.length) { toast("되돌릴 작업이 없습니다"); return; }
+  const st = JSON.parse(S.undo.pop()); A().regions = st.regions; A().chars = st.chars;
+  logEdit("undo", null, null, null); markDirty(); render();
+}
+const GEOM = new Set(["box-edit","nudge","resize-rb","resize-lt","move","resize","box-input","fit-ink","box-w+","box-w-","box-h+","box-h-","box-g+","box-g-"]);
+function logEdit(action, target, before, after){
+  const h = A().history, last = h[h.length-1], now = new Date();
+  if (last && GEOM.has(action) && GEOM.has(last.action) && last.target === target && now - new Date(last.t) < 60000) {
+    last.after = after; last.t = now.toISOString(); last.n = (last.n || 1) + 1; if (last.action !== action) last.action = "box-edit"; return;
+  }
+  h.push({t:now.toISOString(), by:S.userId, action, target, before, after});
+  if (h.length > 400) h.splice(0, h.length - 400);
+}
+function markDirty(){
+  S.dirty = true; setSave("저장 대기…");
+  clearTimeout(S.saveTimer); S.saveTimer = setTimeout(save, 1200);
+  renderCounts();
+}
+function setSave(t, err){ const e=$("saveState"); e.textContent=t; e.classList.toggle("err", !!err); }
+async function save(){
+  if (!S.cur || !S.dirty) return;
+  if (S.local || !S.db) { setSave("이 파일은 내보내기로 저장"); return; }
+  const doc = {...A(), updatedAt:new Date().toISOString(), updatedBy:S.userId};
+  setSave("저장 중…");
+  try { await S.db.doc("annotations/" + A().itemId).set(doc); S.dirty = false; setSave("저장됨 " + new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})); }
+  catch(e){
+    if (e && e.code === "unavailable") { setTimeout(save, 1500 + Math.random()*800); setSave("다시 시도 중…"); return; }
+    if (e && e.code === "invalid_argument") { S.canWrite = false; setSave("저장 권한이 없어 읽기 전용입니다", true); return; }
+    setSave("저장 실패: " + (e && e.code || "알 수 없음"), true);
+  }
+}
+
+/* ─────────────── 불러오기 ─────────────── */
+async function boot(){
+  applyTheme(); renderItems(); render();
+  if (!window.claude || !claude.use) { setSave("저장소 없음 · 파일로 작업", true); return; }
+  claude.use("downloads").then(d => { S.downloads = d; if (!d) $("exportBtn").hidden = true; });
+  claude.use("user").then(async u => {
+    if (!u) return;
+    try { S.userId = await u.id(); } catch(_){}
+    try { const w = await u.can("data.write"); if (w === false) { S.canWrite = false; setSave("읽기 전용 보기입니다", true); } } catch(_){}
+  });
+  const db = await claude.use("db");
+  if (!db) { setSave("저장소를 쓸 수 없는 보기 · 파일로 작업", true); $("items").innerHTML = '<div class="meta" style="padding:6px">저장소에 연결되지 않았습니다. 아래 "내 파일로 작업"에서 이미지와 라벨 JSON을 열어 주세요.</div>'; return; }
+  S.db = db;
+  db.collection("items").onSnapshot(q => {
+    S.items = q.docs.map(d => d.data()).sort((a,b) => (a.order ?? 99) - (b.order ?? 99));
+    renderItems();
+    if (!S.cur && S.items.length) openItem(S.items[0].id);
+  }, e => setSave("항목을 읽지 못했습니다 (" + e.code + ")", true));
+  db.collection("annotations").onSnapshot(q => {
+    S.statusById = {};
+    q.docs.forEach(d => { const v = d.data(); S.statusById[d.id] = {status:v.status, n:(v.chars||[]).length,
+      done:(v.chars||[]).filter(c => c.state !== "proposed").length}; });
+    renderItems();
+  }, () => {});
+}
+async function openItem(id){
+  if (S.dirty) await save();
+  const item = S.items.find(i => i.id === id); if (!item) return;
+  S.prop = item; S.local = false;
+  let ann = null;
+  try { const d = await S.db.doc("annotations/" + id).get(); if (d.exists) ann = d.data(); } catch(_){}
+  S.cur = ann ? JSON.parse(JSON.stringify(ann)) : initFromProposal(item);
+  S.undo = []; S.sel = null; S.dirty = false;
+  if (!ann && item.top_label === "LETTER") { S.mode = "line"; toast("① 행 상자부터 맞추세요 → ② 글자 모드(3)에서 확인. 행을 고치면 그 행 글자가 자동으로 다시 맞춰집니다"); }
+  setSave(ann ? "이전 검수본을 이어서 엽니다" : "기계 제안을 새로 엽니다");
+  loadImage(item.image_url, item);
+}
+function loadImage(url, item){
+  const img = $("img");
+  img.onload = () => { img.width = item.width; img.height = item.height; fit(); render(); };
+  img.onerror = () => setSave("이미지를 불러오지 못했습니다", true);
+  img.src = url;
+  $("empty").hidden = true;
+}
+/* 내 파일로 작업: 제안 JSON(이 편집기 형식 또는 HanOCR 내보내기 형식) + 이미지 */
+const local = {img:null, json:null};
+$("fImg").onchange = e => { const f = e.target.files[0]; if (f) { local.img = URL.createObjectURL(f); tryLocal(); } };
+$("fJson").onchange = async e => { const f = e.target.files[0]; if (!f) return;
+  try { local.json = JSON.parse(await f.text()); tryLocal(); } catch(_) { toast("JSON을 읽지 못했습니다"); } };
+function fromHanocr(j){
+  if (j.regions && j.chars && j.chars.length && "rid" in j.chars[0]) return j;         // 편집기 형식
+  const W = j.image_size ? j.image_size[0] : 0, H = j.image_size ? j.image_size[1] : 0;
+  return { id:"local-" + (j.source_pdf_page||"x") + "-" + (j.region||"R0"), title:"내 파일 · PDF " + (j.source_pdf_page||"?"),
+    width:W, height:H, source:"file",
+    regions:(j.regions||[]).map(r => ({id:r.id, label:r.label, bbox:r.bbox, parent:r.parent, text:r.text||"", attrs:{}})),
+    chars:(j.chars||[]).map((c,i) => ({id:"c"+i, rid:c.region_id, label:c.label||"BODY_CHAR", text:c.text||"", bbox:c.bbox, conf:c.bbox_estimated?.3:.6, flags:{}})) };
+}
+function tryLocal(){
+  if (!local.img || !local.json) return;
+  const item = fromHanocr(local.json);
+  const probe = new Image(); probe.onload = () => {
+    item.width = item.width || probe.naturalWidth; item.height = item.height || probe.naturalHeight;
+    S.prop = item; S.cur = local.json.history ? local.json : initFromProposal(item); S.local = true;
+    S.undo = []; S.sel = null; setSave("내 파일 · 내보내기로 저장"); loadImage(local.img, item); renderItems();
+  }; probe.src = local.img;
+}
+
+/* ─────────────── 화면 이동·확대 ─────────────── */
+function applyView(){ const v=S.view; $("world").style.transform = `translate(${v.tx}px,${v.ty}px) scale(${v.s})`; $("zoomLbl").textContent = Math.round(v.s*100)+"%"; }
+function fit(){
+  if (!S.prop) return; const st = $("stage").getBoundingClientRect();
+  const s = Math.min((st.width-40)/S.prop.width, (st.height-60)/S.prop.height);
+  S.view = {s, tx:(st.width - S.prop.width*s)/2, ty:(st.height - S.prop.height*s)/2 - 10}; applyView();
+}
+function zoomAt(f, cx, cy){
+  const v = S.view, ns = Math.min(8, Math.max(.05, v.s*f));
+  v.tx = cx - (cx - v.tx) * ns / v.s; v.ty = cy - (cy - v.ty) * ns / v.s; v.s = ns; applyView(); render();
+}
+function focusBox(b){
+  if (!b) return; const st = $("stage").getBoundingClientRect(); const v = S.view;
+  const cx = (b[0]+b[2])/2, cy = (b[1]+b[3])/2;
+  if (v.s < .5) v.s = Math.min(1.2, st.height / Math.max(200, (b[3]-b[1])*6));
+  v.tx = st.width/2 - cx*v.s; v.ty = st.height/2 - cy*v.s; applyView(); render();
+}
+function toImg(ev){ const r = $("stage").getBoundingClientRect(); return [(ev.clientX - r.left - S.view.tx)/S.view.s, (ev.clientY - r.top - S.view.ty)/S.view.s]; }
+
+/* ─────────────── 그리기 ─────────────── */
+function render(){ renderTop(); renderSvg(); renderTree(); renderTranscript(); renderAttrs(); renderStrip(); renderCounts(); }
+function renderTop(){
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
+  if (!S.prop) return;
+  $("itemTitle").textContent = S.prop.title;
+  const top = A().regions.find(r => TOP_LABELS.has(r.label)); const at = top ? top.attrs : {};
+  const bits = [S.prop.part, at.caption || [at.figure_id, at.date].filter(Boolean).join(" ") || (at.folio ? "면 " + at.folio : ""), S.prop.pdf_page ? "PDF " + S.prop.pdf_page + "쪽" : "", "제안 " + (A().proposalSource || S.prop.source || "")];
+  $("itemMeta").textContent = bits.filter(Boolean).join("  |  ");
+}
+function selIs(kind, id){ return S.sel && S.sel.kind === kind && S.sel.id === id; }
+function renderSvg(){
+  const svg = $("svg"); if (!S.prop) { svg.innerHTML = ""; return; }
+  svg.setAttribute("width", S.prop.width); svg.setAttribute("height", S.prop.height); svg.setAttribute("viewBox", `0 0 ${S.prop.width} ${S.prop.height}`);
+  const show = {region:$("lyRegion").checked, line:$("lyLine").checked, char:$("lyChar").checked, tag:$("lyTag").checked, ghost:$("lyGhost").checked};
+  const out = []; const hs = 11 / S.view.s;
+  const rect = (b, cls, data) => b ? `<rect class="bx ${cls}" x="${b[0]}" y="${b[1]}" width="${Math.max(1,b[2]-b[0])}" height="${Math.max(1,b[3]-b[1])}" ${data}/>` : "";
+  if (show.region) for (const r of A().regions) {
+    if (LINE_LABELS.has(r.label) || TOP_LABELS.has(r.label)) continue;
+    const act = S.mode === "region"; out.push(rect(r.bbox, `region ${act?"":"faint"} ${selIs("region",r.id)?"sel":""}`, `data-k="region" data-id="${r.id}"`));
+  }
+  if (show.line) for (const r of lines()) {
+    const act = S.mode === "line" || (S.mode === "region" && r.label !== "TEXT_COLUMN");
+    const k = (S.mode === "region") ? "region" : "line";
+    out.push(rect(r.bbox, `line ${act?"":"faint"} ${(selIs("line",r.id)||selIs("region",r.id))?"sel":""}`, `data-k="${k}" data-id="${r.id}"`));
+  }
+  if (show.ghost && S.prop) {
+    const pmap = new Map(S.prop.chars.map(c => [c.id, c]));
+    for (const c of A().chars) { const p = pmap.get(c.pid); if (p && p.bbox && c.bbox && p.bbox.join() !== c.bbox.join()) out.push(rect(p.bbox, "ghost", "")); }
+  }
+  if (show.char) for (const c of A().chars) {
+    if (!c.bbox) continue; const act = S.mode === "char";
+    out.push(rect(c.bbox, `${confClass(c)} ${act?"":"faint"} ${selIs("char",c.id)?"sel":""}`, `data-k="char" data-id="${c.id}"`));
+    if (show.tag && c.text) out.push(`<text class="tag" x="${c.bbox[2]+2/S.view.s}" y="${c.bbox[1]+13/S.view.s}" style="font-size:${13/S.view.s}px">${esc(c.text)}</text>`);
+  }
+  const sb = selectedBox();
+  if (sb) { const b = sb.bbox; const pts = [[b[0],b[1]],[(b[0]+b[2])/2,b[1]],[b[2],b[1]],[b[2],(b[1]+b[3])/2],[b[2],b[3]],[(b[0]+b[2])/2,b[3]],[b[0],b[3]],[b[0],(b[1]+b[3])/2]];
+    pts.forEach((p,i) => out.push(`<rect class="hd h${i}" data-h="${i}" x="${p[0]-hs/2}" y="${p[1]-hs/2}" width="${hs}" height="${hs}"/>`)); }
+  svg.innerHTML = out.join("");
+}
+function selectedBox(){
+  if (!S.sel || !S.cur) return null;
+  const o = S.sel.kind === "char" ? charById(S.sel.id) : regionById(S.sel.id);
+  return o && o.bbox ? o : null;
+}
+function renderItems(){
+  const el = $("items");
+  if (!S.items.length && !S.local) { if (S.db) el.innerHTML = '<div class="meta" style="padding:6px">아직 작업 항목이 없습니다.</div>'; return; }
+  const list = S.local && S.prop ? [S.prop] : S.items;
+  el.innerHTML = list.map(it => {
+    const st = S.statusById[it.id]; const lab = !st ? "제안" : st.status === "submitted" ? "제출됨" : `검수 ${Math.round(100*st.done/Math.max(1,st.n))}%`;
+    const cls = !st ? "" : st.status === "submitted" ? "done" : "wip";
+    return `<button class="item" data-id="${esc(it.id)}" aria-current="${S.prop && S.prop.id===it.id}"><span>${esc(it.title)}</span><span class="badge ${cls}">${lab}</span><small>${esc(it.part||"")} · 글자 ${it.chars ? it.chars.length : "?"}${it.round ? " · 라운드 " + it.round : ""}${it.quality != null ? " · 예시 유사도 " + it.quality.toFixed(2) : ""}</small></button>`;
+  }).join("");
+}
+$("items").onclick = e => { const b = e.target.closest(".item"); if (b && !S.local) openItem(b.dataset.id); };
+function lineColor(r){
+  const cs = charsOf(r.id); if (!cs.length) return "var(--ink-3)";
+  if (cs.every(c => c.state !== "proposed")) return "var(--ok)";
+  const lo = cs.filter(c => c.state === "proposed" && (c.conf ?? .5) < .5).length; return lo ? "var(--low)" : "var(--mid)";
+}
+function renderTree(){
+  const el = $("tree"); if (!S.cur) { el.innerHTML = ""; return; }
+  const kids = p => A().regions.filter(r => r.parent === p);
+  const node = (r, depth) => {
+    const isLine = LINE_LABELS.has(r.label); const k = isLine ? (S.mode === "region" ? "region" : "line") : "region";
+    const cur = selIs("line", r.id) || selIs("region", r.id) || (S.sel && S.sel.kind === "char" && (charById(S.sel.id)||{}).rid === r.id);
+    const txt = isLine ? charsOf(r.id).map(c => c.text).join("") : (r.text || r.attrs.caption || r.attrs.folio || "");
+    const no = r.attrs.line_no ? `${r.attrs.line_no}` : "";
+    let h = `<button style="padding-left:${6+depth*12}px" data-k="${k}" data-id="${esc(r.id)}" aria-current="${cur}"><span class="dot" style="background:${isLine?lineColor(r):"var(--line)"}"></span><span class="lbl">${esc(REGION_KO[r.label]||r.label)} ${esc(no)}</span><span class="txt">${esc(txt)}</span></button>`;
+    for (const c of kids(r.id)) h += node(c, depth+1); return h;
+  };
+  el.innerHTML = A().regions.filter(r => !r.parent || !regionById(r.parent)).map(r => node(r, 0)).join("");
+}
+$("tree").onclick = e => { const b = e.target.closest("button"); if (!b) return; select(b.dataset.k, b.dataset.id, true); };
+
+/* 판독문 정렬 패널: 행마다 글자 칩. 행 사이 ⟨ ⟩ 버튼으로 줄바꿈(행 경계)을 한 글자씩 옮김 */
+function renderTranscript(){
+  const el = $("transcript"); if (!S.cur) { el.innerHTML = ""; return; }
+  const L = lines(); const selChar = S.sel && S.sel.kind === "char" ? charById(S.sel.id) : null;
+  el.innerHTML = L.map((r, i) => {
+    const cs = charsOf(r.id);
+    const cur = selIs("line", r.id) || (selChar && selChar.rid === r.id);
+    let body;
+    if (S.tt === "text") {
+      const chips = cs.map(c => `<span class="chip ${confClass(c)} ${selIs("char",c.id)?"sel":""} ${c.bbox?"":"nobox"}" tabindex="-1" data-id="${esc(c.id)}" title="${esc(CHAR_LABELS[c.label]||c.label)} · 신뢰도 ${(c.conf??0).toFixed(2)}${c.bbox?"":" · 상자 없음"}">${esc(c.text||"·")}</span>`).join("");
+      const canBack = i+1 < L.length && cs.length > 0 && L[i+1].label === r.label;
+      const canPull = i+1 < L.length && charsOf(L[i+1].id).length > 0 && L[i+1].label === r.label;
+      const ctl = (canBack || canPull) ? `<button class="brk" data-brk="${i}" data-d="-1" ${canBack?"":"disabled"} title="이 행 끝 글자를 다음 행으로 ( [ )">끝 글자 ↓</button><button class="brk" data-brk="${i}" data-d="1" ${canPull?"":"disabled"} title="다음 행 첫 글자를 이 행으로 ( ] )">↑ 다음 행 첫 글자</button>` : "";
+      body = `<div class="chips">${chips}${ctl}</div>`;
+    } else {
+      const t = S.tt === "annot" ? r.attrs.annotated_text : r.attrs.modern;
+      body = `<div class="aux" style="grid-column:auto">${esc(t || "— 이 행에 연결된 " + (S.tt==="annot"?"주석문":"현대어역") + "이 없습니다")}</div>`;
+    }
+    const no = r.attrs.line_no || (r.label === "TEXT_COLUMN" ? "" : (REGION_KO[r.label]||"").slice(0,2));
+    return `<div class="lrow" aria-current="${cur}" data-line="${esc(r.id)}"><div class="lno">${esc(no || (i+1))}</div>${body}</div>`;
+  }).join("") || '<div class="meta">행이 없습니다. 행 모드에서 새 상자로 행을 그려 주세요.</div>';
+}
+$("transcript").onclick = e => {
+  const chip = e.target.closest(".chip"); if (chip) { select("char", chip.dataset.id, true); return; }
+  const brk = e.target.closest(".brk"); if (brk && !brk.disabled) { moveBreak(+brk.dataset.brk, +brk.dataset.d); return; }
+  const row = e.target.closest(".lrow"); if (row) select("line", row.dataset.line, true);
+};
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { S.tt = b.dataset.tt; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", String(x===b))); renderTranscript(); });
+
+function renderAttrs(){
+  const el = $("attrs"); if (!S.cur || !S.sel) { el.innerHTML = '<div class="meta">상자나 글자를 고르면 여기서 값과 속성을 고칩니다.</div>'; return; }
+  if (S.sel.kind === "char") {
+    const c = charById(S.sel.id); if (!c) { el.innerHTML = ""; return; }
+    const f = c.flags || {};
+    el.innerHTML = `
+      <div class="fld"><span>글자 값</span><input type="text" class="val" id="aVal" value="${esc(c.text)}" aria-label="글자 값"></div>
+      <div class="fld"><span>라벨</span><select id="aLab">${Object.entries(CHAR_LABELS).map(([k,v]) => `<option value="${k}" ${k===c.label?"selected":""}>${v}</option>`).join("")}</select></div>
+      <div class="fld"><span>표시</span><div class="flags">
+        ${[["rotated","회전"],["inserted","삽입"],["deleted","삭제"],["repeat_mark","반복부호"],["illegible","판독 불가"]].map(([k,v]) => `<label><input type="checkbox" data-flag="${k}" ${f[k]?"checked":""}>${v}</label>`).join("")}
+      </div></div>
+      <div class="fld"><span>상태</span><div>${{proposed:"제안",accepted:"확정",corrected:"사람 수정"}[c.state]} <button id="aAcc" style="margin-left:6px">${c.state==="proposed"?"확정 (Enter)":"제안으로 되돌리기"}</button></div></div>
+      ${boxEditor(c)}
+      <div class="meta">신뢰도 ${(c.conf??0).toFixed(2)}${c.sim!=null?` · 예시 유사도 ${c.sim.toFixed(2)}`:""}${c.prop==="propagated"?" · 고친 상자 기준으로 다시 맞춤":""} · 행 ${esc((regionById(c.rid)||{}).attrs?.line_no || c.rid)}</div>`;
+    if (c.bbox) wireBoxEditor(c);
+    $("aVal").onchange = e => { const v = e.target.value; if (v === c.text) return; snapshot(); logEdit("text", c.id, c.text, v); c.text = v; c.state = "corrected"; markDirty(); render(); };
+    $("aLab").onchange = e => { snapshot(); logEdit("label", c.id, c.label, e.target.value); c.label = e.target.value; c.state = "corrected"; markDirty(); render(); };
+    el.querySelectorAll("[data-flag]").forEach(x => x.onchange = () => { snapshot(); c.flags = {...c.flags, [x.dataset.flag]: x.checked}; logEdit("flag", c.id, x.dataset.flag, x.checked); c.state = "corrected"; markDirty(); render(); });
+    $("aAcc").onclick = () => { snapshot(); if (c.state === "proposed") { c.state = "accepted"; logEdit("accept", c.id); } else { c.state = "proposed"; logEdit("reopen", c.id); } markDirty(); render(); };
+  } else {
+    const r = regionById(S.sel.id); if (!r) { el.innerHTML = ""; return; }
+    const at = r.attrs || {}; const isLine = LINE_LABELS.has(r.label);
+    const extra = [["line_no","행 번호"],["figure_id","도판·편지 번호"],["date","날짜"],["folio","면 번호"],["caption","캡션"],["rotation","회전(도)"]]
+      .filter(([k]) => k in at || (TOP_LABELS.has(r.label) && ["figure_id","date","folio","caption"].includes(k)) || (isLine && ["line_no","rotation"].includes(k)) || (r.label==="ENVELOPE_TEXT" && k==="rotation"));
+    el.innerHTML = `
+      <div class="fld"><span>라벨</span><select id="rLab">${REGION_LABELS.map(k => `<option value="${k}" ${k===r.label?"selected":""}>${REGION_KO[k]||k}</option>`).join("")}</select></div>
+      ${isLine ? `<div class="fld"><span>행 글자</span><div style="font-family:var(--glyph);font-size:15px">${esc(charsOf(r.id).map(c=>c.text).join(""))}</div></div>` :
+        `<div class="fld"><span>텍스트</span><input type="text" id="rTxt" value="${esc(r.text||"")}"></div>`}
+      ${extra.map(([k,v]) => `<div class="fld"><span>${v}</span><input type="text" data-attr="${k}" value="${esc(at[k] ?? "")}"></div>`).join("")}
+      ${isLine ? `<div class="fld"><span>대두</span><label><input type="checkbox" id="rElev" ${at.elevated?"checked":""}> 위로 올려 쓴 행</label></div>` : ""}
+      ${boxEditor(r)}
+      <div class="meta">${r.state === "proposed" ? "제안" : "사람 수정"}</div>`;
+    if (r.bbox) wireBoxEditor(r);
+    $("rLab").onchange = e => { snapshot(); logEdit("region-label", r.id, r.label, e.target.value); r.label = e.target.value; r.state = "corrected"; markDirty(); render(); };
+    const t = $("rTxt"); if (t) t.onchange = e => { snapshot(); logEdit("region-text", r.id, r.text, e.target.value); r.text = e.target.value; r.state = "corrected"; markDirty(); render(); };
+    el.querySelectorAll("[data-attr]").forEach(x => x.onchange = () => { snapshot(); logEdit("attr", r.id, x.dataset.attr, x.value); r.attrs = {...r.attrs, [x.dataset.attr]: x.value}; r.state = "corrected"; markDirty(); render(); });
+    const ev = $("rElev"); if (ev) ev.onchange = () => { snapshot(); r.attrs = {...r.attrs, elevated: ev.checked}; r.state = "corrected"; markDirty(); render(); };
+  }
+}
+/* 상자 크기·위치 직접 입력 + 버튼 */
+function boxEditor(o){
+  if (!o.bbox) return `<div class="fld"><span>상자</span><div class="meta">상자가 없습니다 · <kbd>N</kbd>으로 그리세요</div></div>`;
+  const [x0,y0,x1,y1] = o.bbox.map(Math.round);
+  return `<div class="fld" style="align-items:start"><span>상자</span><div>
+    <div class="boxed">
+      <input type="number" data-bx="0" value="${x0}" aria-label="왼쪽 x"><input type="number" data-bx="1" value="${y0}" aria-label="위쪽 y">
+      <input type="number" data-bx="2" value="${x1}" aria-label="오른쪽 x"><input type="number" data-bx="3" value="${y1}" aria-label="아래쪽 y">
+      <small>왼쪽</small><small>위</small><small>오른쪽</small><small>아래</small>
+    </div>
+    <div class="meta" style="margin-top:3px">폭 ${x1-x0} · 높이 ${y1-y0} px</div>
+    <div class="nudge" role="group" aria-label="상자 크기 조절">
+      <button data-nd="w-" title="폭 줄이기 (Shift+←)">폭 −</button><button data-nd="w+" title="폭 늘리기 (Shift+→)">폭 +</button>
+      <button data-nd="h-" title="높이 줄이기 (Shift+↑)">높이 −</button><button data-nd="h+" title="높이 늘리기 (Shift+↓)">높이 +</button>
+      <button data-nd="g+" title="사방으로 키우기">크게</button><button data-nd="g-" title="사방으로 줄이기">작게</button>
+      <button data-nd="ink" title="상자 안 먹 자국에 딱 맞게 (T)">잉크에 맞추기</button>
+    </div></div></div>`;
+}
+function wireBoxEditor(o){
+  $("attrs").querySelectorAll("[data-bx]").forEach(inp => inp.onchange = () => {
+    const b = [...o.bbox]; b[+inp.dataset.bx] = Number(inp.value);
+    setBox(o, [Math.min(b[0],b[2]), Math.min(b[1],b[3]), Math.max(b[0],b[2]), Math.max(b[1],b[3])], "box-input");
+  });
+  $("attrs").querySelectorAll("[data-nd]").forEach(btn => btn.onclick = ev => {
+    const k = btn.dataset.nd; if (k === "ink") { fitToInk(o); return; }
+    const st = ev.shiftKey ? 10 : 2; const b = [...o.bbox];
+    if (k === "w+") { b[0] -= st/2; b[2] += st/2; } if (k === "w-") { b[0] += st/2; b[2] -= st/2; }
+    if (k === "h+") { b[1] -= st/2; b[3] += st/2; } if (k === "h-") { b[1] += st/2; b[3] -= st/2; }
+    if (k === "g+") { b[0] -= st/2; b[1] -= st/2; b[2] += st/2; b[3] += st/2; } if (k === "g-") { b[0] += st/2; b[1] += st/2; b[2] -= st/2; b[3] -= st/2; }
+    setBox(o, b, "box-" + k);
+  });
+}
+/* 크기 변경 공통: 최소 크기 보장, 이미지 밖으로 나가지 않게, 연속 조작은 되돌리기 한 번으로 묶음 */
+let lastNudge = {id:null, t:0};
+function setBox(o, b, action){
+  const W = S.prop.width, H = S.prop.height;
+  let [x0,y0,x1,y1] = b.map(Math.round);
+  x0 = Math.max(0, Math.min(x0, W-2)); y0 = Math.max(0, Math.min(y0, H-2)); x1 = Math.min(W, Math.max(x1, x0+2)); y1 = Math.min(H, Math.max(y1, y0+2));
+  const now = Date.now();
+  if (!(lastNudge.id === o.id && now - lastNudge.t < 900)) snapshot();
+  lastNudge = {id:o.id, t:now};
+  logEdit(action, o.id, o.bbox, [x0,y0,x1,y1]);
+  o.bbox = [x0,y0,x1,y1]; o.state = "corrected";
+  afterGeomEdit(o); markDirty(); render();
+}
+let propToastAt = 0;
+function afterGeomEdit(o){
+  if (!$("autoProp") || !$("autoProp").checked) return;
+  const rid = o.rid || (LINE_LABELS.has(o.label) ? o.id : null); if (!rid) return;
+  const n = repropose(rid, true);   // 글자를 고치면 같은 행의 제안 글자, 행 상자를 고치면 그 행 글자 재배치
+  if (n) { const h = A().history, last = h[h.length-1]; if (last) last.propagated = (last.propagated || 0) + n;
+    if (Date.now() - propToastAt > 3000) { propToastAt = Date.now(); toast(`고친 상자를 기준으로 이 행의 나머지 ${n}자를 다시 맞췄습니다`); } }
+}
+/* 잉크 읽기 (같은 출처 이미지일 때만 가능) */
+let inkCanvas = null;
+function inkCtx(){
+  const img = $("img"); if (!img.complete || !S.prop) return null;
+  try {
+    if (!inkCanvas || inkCanvas._src !== img.src) { inkCanvas = document.createElement("canvas"); inkCanvas.width = S.prop.width; inkCanvas.height = S.prop.height;
+      inkCanvas.getContext("2d", {willReadFrequently:true}).drawImage(img, 0, 0, S.prop.width, S.prop.height); inkCanvas._src = img.src; }
+    const g = inkCanvas.getContext("2d", {willReadFrequently:true}); g.getImageData(0,0,1,1); return g;
+  } catch(e){ return null; }
+}
+function readLum(g, x0, y0, x1, y1){
+  x0 = Math.max(0, Math.round(x0)); y0 = Math.max(0, Math.round(y0)); x1 = Math.min(S.prop.width, Math.round(x1)); y1 = Math.min(S.prop.height, Math.round(y1));
+  const w = x1-x0, h = y1-y0; if (w < 2 || h < 2) return null;
+  const d = g.getImageData(x0, y0, w, h).data, lum = new Float32Array(w*h);
+  for (let i=0;i<w*h;i++) lum[i] = .299*d[4*i] + .587*d[4*i+1] + .114*d[4*i+2];
+  const sorted = Array.from(lum).sort((a,b)=>a-b); const bg = sorted[Math.floor(.9*sorted.length)], dark = sorted[Math.floor(.03*sorted.length)];
+  return {x0, y0, w, h, lum, thr: dark + (bg-dark)*0.55, ok: bg - dark > 25};
+}
+/* 잉크에 맞추기: 상자(조금 넓힌 범위) 안의 어두운 픽셀 경계로 조임 */
+function inkBox(b, padFrac){
+  const g = inkCtx(); if (!g) return undefined;
+  const pad = Math.round(Math.max(padFrac ? 4 : 0, (padFrac||0) * Math.max(b[2]-b[0], b[3]-b[1])));
+  const R = readLum(g, b[0]-pad, b[1]-pad, b[2]+pad, b[3]+pad); if (!R || !R.ok) return null;
+  const {x0, y0, w, h, lum, thr} = R;
+  const ix0=Math.round(b[0])-x0, iy0=Math.round(b[1])-y0, ix1=Math.round(b[2])-x0, iy1=Math.round(b[3])-y0;
+  let mx0=1e9,my0=1e9,mx1=-1,my1=-1;
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    if (lum[y*w+x] > thr) continue;
+    const inside = x>=ix0 && x<ix1 && y>=iy0 && y<iy1;
+    if (!inside) { const cx = Math.min(Math.max(x, ix0), ix1-1), cy = Math.min(Math.max(y, iy0), iy1-1); if (lum[cy*w+cx] > thr) continue; }
+    if (x<mx0) mx0=x; if (y<my0) my0=y; if (x>mx1) mx1=x; if (y>my1) my1=y;
+  }
+  if (mx1 < 0) return null;
+  return [x0+mx0-1, y0+my0-1, x0+mx1+2, y0+my1+2];
+}
+function fitToInk(o){
+  const r = inkBox(o.bbox, 0.08);
+  if (r === undefined) { toast("이 보기에서는 이미지 픽셀을 읽을 수 없어 잉크 맞추기를 쓸 수 없습니다"); return; }
+  if (!r) { toast("상자 안에서 먹 자국을 찾지 못했습니다"); return; }
+  setBox(o, r, "fit-ink"); toast("먹 자국에 맞췄습니다");
+}
+/* 띠 [x0,y0,x1,y1] 를 m 글자로: 등간격 근처에서 잉크가 가장 적은 줄을 자르고, 조각마다 잉크로 조임 */
+function splitBand(b, m, axis){
+  const [x0,y0,x1,y1] = b; const vertical = axis === "ttb";
+  const L = vertical ? y1-y0 : x1-x0; const out = [];
+  const g = inkCtx(); const R = g ? readLum(g, x0, y0, x1, y1) : null;
+  let prof = null;
+  if (R && R.ok) { const n = vertical ? R.h : R.w; prof = new Float32Array(n);
+    for (let y=0;y<R.h;y++) for (let x=0;x<R.w;x++) if (R.lum[y*R.w+x] <= R.thr) prof[vertical ? y : x]++; }
+  const cuts = [0];
+  for (let i=1;i<m;i++){
+    const ideal = L*i/m, win = 0.3*L/m; let best = Math.round(ideal);
+    if (prof) { let bv = Infinity; for (let t=Math.max(cuts[cuts.length-1]+2, Math.round(ideal-win)); t<=Math.min(L-2, Math.round(ideal+win)); t++){
+      const v = (prof[t-1]||0) + prof[t] + (prof[t+1]||0) + 0.02*Math.abs(t-ideal); if (v < bv) { bv = v; best = t; } } }
+    cuts.push(best);
+  }
+  cuts.push(L);
+  for (let i=0;i<m;i++){
+    const a = cuts[i], c = cuts[i+1];
+    let seg = vertical ? [x0, y0+a, x1, y0+c] : [x0+a, y0, x0+c, y1];
+    const t = prof ? inkBox(seg, 0) : null; if (t) seg = t;
+    out.push(seg.map(Math.round));
+  }
+  return out;
+}
+/* 고친 상자(확정·사람 수정)를 기준점으로, 그 사이의 제안 글자만 다시 나눔 */
+function repropose(rid, quiet){
+  const r = regionById(rid); if (!r || !LINE_LABELS.has(r.label)) return 0;
+  const cs = charsOf(rid); if (!cs.length) return 0;
+  const ax = lineAxis(r); const vertical = ax === "ttb";
+  const LB = r.bbox || cs.filter(c=>c.bbox).reduce((u,c)=>u?[Math.min(u[0],c.bbox[0]),Math.min(u[1],c.bbox[1]),Math.max(u[2],c.bbox[2]),Math.max(u[3],c.bbox[3])]:[...c.bbox], null);
+  if (!LB) return 0;
+  const fixed = c => c.state !== "proposed" && c.bbox;
+  let changed = 0, i = 0;
+  while (i < cs.length){
+    if (fixed(cs[i])) { i++; continue; }
+    let j = i; while (j < cs.length && !fixed(cs[j])) j++;
+    const prev = cs[i-1], next = cs[j];
+    let lo, hi;
+    if (vertical) { lo = prev ? prev.bbox[3] : LB[1]; hi = next ? next.bbox[1] : LB[3]; }
+    else if (ax === "ltr") { lo = prev ? prev.bbox[2] : LB[0]; hi = next ? next.bbox[0] : LB[2]; }
+    else { lo = next ? next.bbox[2] : LB[0]; hi = prev ? prev.bbox[0] : LB[2]; }
+    const m = j - i;
+    if (hi - lo >= m * 4) {
+      const band = vertical ? [LB[0], lo, LB[2], hi] : [lo, LB[1], hi, LB[3]];
+      let boxes = splitBand(band, m, vertical ? "ttb" : "ltr");
+      if (ax === "rtl") boxes = boxes.reverse();
+      for (let k=0;k<m;k++){ const c = cs[i+k]; c.bbox = boxes[k]; c.conf = Math.min(c.conf ?? .5, .5); c.prop = "propagated"; changed++; }
+    }
+    i = j;
+  }
+  if (changed && !quiet) { logEdit("propagate", rid, null, changed); toast(`고친 상자를 기준으로 이 행의 나머지 ${changed}자를 다시 맞췄습니다`); }
+  return changed;
+}
+
+function renderStrip(){
+  const el = $("strip"); if (!S.cur) { el.innerHTML = ""; return; }
+  const rid = S.sel ? (S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id) : null;
+  const r = rid && regionById(rid);
+  if (!r || !LINE_LABELS.has(r.label)) { el.innerHTML = '<div class="hint">행이나 글자를 고르면 그 행의 글자 조각이 여기에 나란히 보입니다.</div>'; return; }
+  const cs = charsOf(r.id);
+  el.innerHTML = `<div class="hint">${esc(REGION_KO[r.label])} ${esc(r.attrs.line_no||"")}<br>${cs.length}자</div>` + cs.map(c => `
+    <button class="tile ${selIs("char",c.id)?"sel":""} ${c.state==="accepted"?"acc":c.state==="corrected"?"human":""}" data-id="${esc(c.id)}" title="${esc(c.text)}">
+      <canvas width="60" height="60" data-crop="${esc(c.id)}"></canvas><b>${esc(c.text||"·")}</b>
+      <span class="bar"><i style="width:${Math.round(100*(c.state!=="proposed"?1:(c.conf??.5)))}%;background:${c.state!=="proposed"?"var(--ok)":(c.conf??.5)>=.8?"var(--ok)":(c.conf??.5)>=.5?"var(--mid)":"var(--low)"}"></i></span></button>`).join("");
+  const img = $("img");
+  el.querySelectorAll("canvas[data-crop]").forEach(cv => {
+    const c = charById(cv.dataset.crop); const g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,60,60);
+    if (!c || !c.bbox || !img.complete) { g.fillStyle = "#C8413B"; g.font = "11px sans-serif"; g.fillText("상자 없음", 6, 34); return; }
+    const [x0,y0,x1,y1] = c.bbox; const w = x1-x0, h = y1-y0, k = 56/Math.max(w,h,1);
+    try { g.drawImage(img, x0, y0, w, h, 30 - w*k/2, 30 - h*k/2, w*k, h*k); } catch(_){}
+  });
+  const t = el.querySelector(".tile.sel"); if (t && t.scrollIntoView) t.scrollIntoView({block:"nearest", inline:"nearest"});
+}
+$("strip").onclick = e => { const t = e.target.closest(".tile"); if (t) select("char", t.dataset.id, true); };
+$("strip").ondblclick = e => { const t = e.target.closest(".tile"); if (t) { select("char", t.dataset.id, true); setTimeout(() => { const v=$("aVal"); if (v){ v.focus(); v.select(); } }, 0); } };
+function renderCounts(){
+  if (!S.cur) { $("counts").textContent = ""; return; }
+  const cs = A().chars; const a = cs.filter(c => c.state === "accepted").length, h = cs.filter(c => c.state === "corrected").length;
+  $("counts").textContent = `확정 ${a} · 사람 수정 ${h} · 남은 제안 ${cs.length - a - h} / ${cs.length}자`;
+}
+
+/* ─────────────── 선택 ─────────────── */
+function select(kind, id, focus){
+  if (kind === "char" && S.mode !== "char") S.mode = "char";
+  if (kind === "line" && S.mode === "char") { /* 글자 모드에서 행을 눌러도 행 선택 */ }
+  S.sel = id ? {kind, id} : null; render();
+  if (focus && S.sel) { const o = kind === "char" ? charById(id) : regionById(id); if (o && o.bbox) ensureVisible(o.bbox); }
+}
+function ensureVisible(b){
+  const st = $("stage").getBoundingClientRect(), v = S.view;
+  const x0 = b[0]*v.s+v.tx, y0 = b[1]*v.s+v.ty, x1 = b[2]*v.s+v.tx, y1 = b[3]*v.s+v.ty;
+  if (x0 < 20 || y0 < 20 || x1 > st.width-20 || y1 > st.height-60) focusBox(b);
+}
+function stepChar(d){
+  const L = lines(); const order = L.flatMap(r => charsOf(r.id)); if (!order.length) return;
+  let i = S.sel && S.sel.kind === "char" ? order.findIndex(c => c.id === S.sel.id) : -1;
+  i = Math.min(order.length-1, Math.max(0, i + d)); select("char", order[i].id, true);
+}
+function stepLine(d){
+  const L = lines(); if (!L.length) return;
+  const rid = S.sel ? (S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id) : null;
+  let i = L.findIndex(r => r.id === rid); i = Math.min(L.length-1, Math.max(0, i + d));
+  if (S.mode === "char") { const cs = charsOf(L[i].id); if (cs.length) { select("char", cs[0].id, true); return; } }
+  select("line", L[i].id, true);
+}
+
+/* ─────────────── 편집 작업 ─────────────── */
+function lineAxis(r){ return r && r.label === "ENVELOPE_TEXT" ? (Number(r.attrs.rotation) === 90 ? "rtl" : "ltr") : "ttb"; }
+/* 행 상자 안에서 글자 수만큼 등분 → 새 제안(신뢰도 낮음) */
+function resplitLine(r, texts, keepStates){
+  const old = charsOf(r.id); const n = texts.length; if (!r.bbox) return;
+  const [x0,y0,x1,y1] = r.bbox; const ax = lineAxis(r);
+  const boxes = [];
+  for (let i=0;i<n;i++){
+    if (ax === "ttb") boxes.push([x0, y0 + (y1-y0)*i/n, x1, y0 + (y1-y0)*(i+1)/n]);
+    else { const t = ax === "ltr" ? i : n-1-i; boxes.push([x0 + (x1-x0)*t/n, y0, x0 + (x1-x0)*(t+1)/n, y1]); }
+  }
+  const rest = A().chars.filter(c => c.rid !== r.id);
+  const idx = A().chars.findIndex(c => c.rid === r.id);
+  const fresh = texts.map((t, i) => ({id:newId("c"), rid:r.id, label:(old[i]||old[0]||{}).label || "BODY_CHAR", text:t.text ?? t,
+    bbox:boxes[i].map(v => Math.round(v)), conf:.35, flags:{...((t.flags)||{})}, state: keepStates && t.state ? t.state : "proposed", pid:null, resplit:true}));
+  rest.splice(idx < 0 ? rest.length : Math.min(idx, rest.length), 0, ...fresh);
+  A().chars = rest;
+}
+function moveBreak(i, d){
+  const L = lines(); const a = L[i], b = L[i+1]; if (!a || !b) return;
+  const ca = charsOf(a.id), cb = charsOf(b.id);
+  snapshot();
+  const ta = ca.map(c => ({text:c.text, flags:c.flags})), tb = cb.map(c => ({text:c.text, flags:c.flags}));
+  if (d < 0) { if (!ta.length) return; tb.unshift(ta.pop()); } else { if (!tb.length) return; ta.push(tb.shift()); }
+  logEdit("line-break", a.id + "|" + b.id, [ca.length, cb.length], [ta.length, tb.length]);
+  resplitLine(a, ta); resplitLine(b, tb); repropose(a.id, true); repropose(b.id, true);
+  markDirty(); select("line", a.id); toast(`행 경계를 옮겼습니다 · 두 행의 상자를 다시 제안했습니다 (${ta.length}자 / ${tb.length}자)`);
+}
+function acceptSel(next){
+  if (!S.sel || S.sel.kind !== "char") return; const c = charById(S.sel.id); if (!c) return;
+  if (c.state === "proposed") { snapshot(); c.state = "accepted"; logEdit("accept", c.id); markDirty(); }
+  if (next) stepChar(1); else render();
+}
+function acceptLine(){
+  const rid = S.sel ? (S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id) : null; if (!rid) return;
+  const cs = charsOf(rid).filter(c => c.state === "proposed"); if (!cs.length) { toast("이 행은 이미 모두 확정됐습니다"); return; }
+  snapshot(); cs.forEach(c => c.state = "accepted"); logEdit("accept-line", rid, null, cs.length); markDirty(); render(); toast(`${cs.length}자를 확정했습니다`);
+}
+function mergeNext(){
+  if (!S.sel || S.sel.kind !== "char") return; const c = charById(S.sel.id); const cs = charsOf(c.rid); const i = cs.indexOf(c); const n = cs[i+1];
+  if (!n) { toast("이 행의 마지막 글자입니다"); return; }
+  snapshot(); const b = c.bbox && n.bbox ? [Math.min(c.bbox[0],n.bbox[0]),Math.min(c.bbox[1],n.bbox[1]),Math.max(c.bbox[2],n.bbox[2]),Math.max(c.bbox[3],n.bbox[3])] : (c.bbox||n.bbox);
+  logEdit("merge", c.id + "+" + n.id, [c.text, n.text], c.text + n.text);
+  c.bbox = b; c.text = c.text + n.text; c.state = "corrected"; A().chars = A().chars.filter(x => x !== n);
+  markDirty(); render(); toast("상자를 합쳤습니다 · 값을 확인해 주세요 (E)");
+}
+function splitSel(){
+  if (!S.sel || S.sel.kind !== "char") return; const c = charById(S.sel.id); if (!c || !c.bbox) return;
+  snapshot(); const r = regionById(c.rid); const ax = lineAxis(r); const [x0,y0,x1,y1] = c.bbox;
+  const g = graphemes(c.text); const t1 = g.length > 1 ? g[0] : c.text, t2 = g.length > 1 ? g.slice(1).join("") : "";
+  const b1 = ax === "ttb" ? [x0,y0,x1,Math.round((y0+y1)/2)] : [x0,y0,Math.round((x0+x1)/2),y1];
+  const b2 = ax === "ttb" ? [x0,Math.round((y0+y1)/2),x1,y1] : [Math.round((x0+x1)/2),y0,x1,y1];
+  const n = {id:newId("c"), rid:c.rid, label:c.label, text:t2, bbox:b2, conf:c.conf, flags:{...c.flags}, state:"corrected", pid:null};
+  logEdit("split", c.id, c.text, [t1, t2]);
+  c.bbox = b1; c.text = t1; c.state = "corrected";
+  const all = A().chars; all.splice(all.indexOf(c)+1, 0, n); markDirty(); render(); toast(t2 ? "나눴습니다" : "나눴습니다 · 새 글자의 값을 넣어 주세요");
+}
+async function deleteSel(){
+  if (!S.sel) return; snapshot();
+  if (S.sel.kind === "char") { const c = charById(S.sel.id); const cs = charsOf(c.rid); const i = cs.indexOf(c);
+    A().chars = A().chars.filter(x => x !== c); logEdit("delete", c.id, c.text, null); S.sel = cs[i+1] ? {kind:"char", id:cs[i+1].id} : cs[i-1] ? {kind:"char", id:cs[i-1].id} : null; }
+  else { const r = regionById(S.sel.id); if (TOP_LABELS.has(r.label)) { toast("최상위 영역은 지울 수 없습니다"); S.undo.pop(); return; }
+    const n = charsOf(r.id).length; if (n && !(await askConfirm(`이 행의 글자 ${n}개도 함께 지웁니다. 계속할까요?`, "함께 지우기"))) { S.undo.pop(); return; }
+    A().chars = A().chars.filter(c => c.rid !== r.id); A().regions = A().regions.filter(x => x !== r); logEdit("delete-region", r.id, r.label, null); S.sel = null; }
+  markDirty(); render();
+}
+function resplitSel(){
+  const rid = S.sel ? (S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id) : null; const r = rid && regionById(rid);
+  if (!r || !LINE_LABELS.has(r.label)) { toast("행을 먼저 고르세요"); return; }
+  const cs = charsOf(r.id); if (!cs.length) return; snapshot();
+  const n = repropose(r.id, true);
+  if (!n) resplitLine(r, cs.map(c => ({text:c.text, flags:c.flags})));
+  logEdit("resplit", r.id, cs.length, n); markDirty(); select("line", r.id);
+  toast(n ? `확정·수정한 글자는 그대로 두고 나머지 ${n}자를 잉크에 맞춰 다시 나눴습니다` : "행 안 글자 상자를 등분해 다시 제안했습니다");
+}
+function addBox(b){
+  snapshot();
+  if (S.mode === "char") {
+    const cx = (b[0]+b[2])/2, cy = (b[1]+b[3])/2;
+    const host = lines().filter(r => r.bbox).sort((p,q) => dist(p.bbox,cx,cy) - dist(q.bbox,cx,cy))[0];
+    if (!host) { toast("글자를 넣을 행이 없습니다 · 행 모드에서 행부터 그려 주세요"); S.undo.pop(); return; }
+    const selC = S.sel && S.sel.kind === "char" ? charById(S.sel.id) : null;
+    if (selC && !selC.bbox) { selC.bbox = b; selC.state = "corrected"; logEdit("draw-missing", selC.id, null, b); afterGeomEdit(selC); markDirty(); render(); return; }
+    const cs = charsOf(host.id); const ax = lineAxis(host);
+    const key = c => ax === "ttb" ? (c.bbox ? (c.bbox[1]+c.bbox[3])/2 : 0) : ax === "ltr" ? (c.bbox?(c.bbox[0]+c.bbox[2])/2:0) : -((c.bbox?(c.bbox[0]+c.bbox[2])/2:0));
+    const nk = ax === "ttb" ? cy : ax === "ltr" ? cx : -cx;
+    const after = cs.filter(c => c.bbox && key(c) < nk).pop();
+    const n = {id:newId("c"), rid:host.id, label:"BODY_CHAR", text:"", bbox:b, conf:1, flags:{}, state:"corrected", pid:null};
+    const all = A().chars; const pos = after ? all.indexOf(after)+1 : (cs[0] ? all.indexOf(cs[0]) : all.length); all.splice(pos, 0, n);
+    logEdit("draw-char", n.id, null, b); markDirty(); select("char", n.id); setTimeout(() => { const v=$("aVal"); if (v) v.focus(); }, 0);
+  } else {
+    const top = A().regions.find(r => TOP_LABELS.has(r.label));
+    const label = S.mode === "line" ? "TEXT_COLUMN" : "PAPER_DECORATION";
+    const n = {id:newId("r"), label, bbox:b, parent: top ? top.id : null, text:"", attrs:{}, state:"corrected"};
+    A().regions.push(n); logEdit("draw-region", n.id, null, {label, b}); markDirty(); select(S.mode === "line" ? "line" : "region", n.id);
+    toast(S.mode === "line" ? "새 행을 만들었습니다 · 오른쪽에서 라벨을 확인하세요" : "새 영역을 만들었습니다 · 오른쪽에서 라벨을 고르세요");
+  }
+}
+const dist = (b, x, y) => Math.hypot(Math.max(b[0]-x, 0, x-b[2]), Math.max(b[1]-y, 0, y-b[3]));
+
+/* ─────────────── 마우스: 이동·크기·그리기·화면 이동 ─────────────── */
+let drag = null;
+$("stage").addEventListener("pointerdown", ev => {
+  if (!S.prop || ev.button > 1) return;
+  const t = ev.target; const p = toImg(ev); $("stage").setPointerCapture(ev.pointerId);
+  if (S.draw || ev.shiftKey && ev.altKey) { drag = {type:"draw", p0:p, el:null}; return; }
+  if (t.dataset && t.dataset.h !== undefined) { const o = selectedBox(); snapshot(); drag = {type:"resize", h:+t.dataset.h, o, b0:[...o.bbox]}; return; }
+  if (t.dataset && t.dataset.k) {
+    const k = t.dataset.k; select(k, t.dataset.id);
+    const o = selectedBox(); if (o) { snapshot(); drag = {type:"move", o, p0:p, b0:[...o.bbox], moved:false}; }
+    return;
+  }
+  drag = {type:"pan", x:ev.clientX, y:ev.clientY, tx:S.view.tx, ty:S.view.ty, moved:false}; $("stage").classList.add("panning");
+});
+$("stage").addEventListener("pointermove", ev => {
+  if (!drag) return; const p = toImg(ev);
+  if (drag.type === "pan") { S.view.tx = drag.tx + ev.clientX - drag.x; S.view.ty = drag.ty + ev.clientY - drag.y; drag.moved = true; applyView(); return; }
+  if (drag.type === "move") { const dx = p[0]-drag.p0[0], dy = p[1]-drag.p0[1]; if (Math.abs(dx)+Math.abs(dy) > 1) drag.moved = true;
+    drag.o.bbox = [drag.b0[0]+dx, drag.b0[1]+dy, drag.b0[2]+dx, drag.b0[3]+dy].map(Math.round); renderSvg(); return; }
+  if (drag.type === "resize") { const b = [...drag.b0]; const h = drag.h;
+    if ([0,6,7].includes(h)) b[0] = p[0]; if ([2,3,4].includes(h)) b[2] = p[0]; if ([0,1,2].includes(h)) b[1] = p[1]; if ([4,5,6].includes(h)) b[3] = p[1];
+    drag.o.bbox = [Math.min(b[0],b[2]), Math.min(b[1],b[3]), Math.max(b[0],b[2]), Math.max(b[1],b[3])].map(Math.round); drag.moved = true; renderSvg(); return; }
+  if (drag.type === "draw") { const b = [Math.min(drag.p0[0],p[0]), Math.min(drag.p0[1],p[1]), Math.max(drag.p0[0],p[0]), Math.max(drag.p0[1],p[1])];
+    drag.b = b.map(Math.round); renderSvg(); $("svg").insertAdjacentHTML("beforeend", `<rect class="bx sel" x="${b[0]}" y="${b[1]}" width="${b[2]-b[0]}" height="${b[3]-b[1]}"/>`); }
+});
+$("stage").addEventListener("pointerup", () => {
+  if (!drag) return; const d = drag; drag = null; $("stage").classList.remove("panning");
+  if (d.type === "pan" && !d.moved) { S.sel = null; render(); return; }
+  if (d.type === "move" || d.type === "resize") {
+    if (!d.moved) { S.undo.pop(); render(); return; }
+    d.o.state = "corrected"; logEdit(d.type, d.o.id, d.b0, d.o.bbox); afterGeomEdit(d.o); markDirty(); render(); return; }
+  if (d.type === "draw") { if (d.b && (d.b[2]-d.b[0]) > 3 && (d.b[3]-d.b[1]) > 3) addBox(d.b); else render(); setDraw(false); }
+});
+$("stage").addEventListener("wheel", ev => { ev.preventDefault(); const r = $("stage").getBoundingClientRect(); zoomAt(ev.deltaY < 0 ? 1.15 : 1/1.15, ev.clientX - r.left, ev.clientY - r.top); }, {passive:false});
+function setDraw(on){ S.draw = on; $("drawBtn").setAttribute("aria-pressed", String(on)); $("stage").classList.toggle("drawing", on); if (on) toast(S.mode==="char" ? "끌어서 글자 상자를 그리세요 (상자 없는 글자를 골랐다면 그 글자의 상자가 됩니다)" : S.mode==="line" ? "끌어서 새 행을 그리세요" : "끌어서 새 영역을 그리세요"); }
+
+/* ─────────────── 버튼·단축키 ─────────────── */
+document.querySelectorAll(".modes button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+function setMode(m){
+  S.mode = m;
+  if (S.sel) { if (m === "char" && S.sel.kind !== "char") { const cs = charsOf(S.sel.id); S.sel = cs[0] ? {kind:"char", id:cs[0].id} : null; }
+    else if (m === "line" && S.sel.kind === "char") { const c = charById(S.sel.id); S.sel = c ? {kind:"line", id:c.rid} : null; }
+    else if (m === "region" && S.sel.kind !== "region") { const id = S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id; S.sel = id ? {kind:"region", id} : null; } }
+  render();
+}
+$("undoBtn").onclick = undo; $("drawBtn").onclick = () => setDraw(!S.draw); $("mergeBtn").onclick = mergeNext; $("splitBtn").onclick = splitSel;
+$("delBtn").onclick = deleteSel; $("resplitBtn").onclick = resplitSel; $("acceptLineBtn").onclick = acceptLine;
+$("zoomIn").onclick = () => { const r=$("stage").getBoundingClientRect(); zoomAt(1.25, r.width/2, r.height/2); };
+$("zoomOut").onclick = () => { const r=$("stage").getBoundingClientRect(); zoomAt(0.8, r.width/2, r.height/2); };
+$("fitBtn").onclick = () => { fit(); render(); };
+["lyRegion","lyLine","lyChar","lyTag","lyGhost"].forEach(id => $(id).onchange = renderSvg);
+$("helpBtn").onclick = () => $("help").classList.toggle("open");
+$("themeBtn").onclick = () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark"; try { localStorage.setItem("s2-theme", r.dataset.theme); } catch(_){} };
+function applyTheme(){ try { const t = localStorage.getItem("s2-theme"); if (t) document.documentElement.dataset.theme = t; } catch(_){} }
+$("exportBtn").onclick = async () => {
+  if (!S.cur) return; if (!S.downloads) { toast("이 보기에서는 파일로 내보낼 수 없습니다"); return; }
+  const out = {schema:"hanocr-annotation/1", item:{id:S.prop.id, title:S.prop.title, part:S.prop.part, pdf_page:S.prop.pdf_page, width:S.prop.width, height:S.prop.height},
+    exportedAt:new Date().toISOString(), ...A()};
+  try { await S.downloads.save({filename:`${S.prop.id}_annotation.json`, data:JSON.stringify(out, null, 1)}); toast("내보냈습니다"); }
+  catch(e){ toast(e && e.code === "declined" ? "내보내기를 취소했습니다" : "내보내지 못했습니다 (" + (e && e.code || "") + ")"); }
+};
+$("submitBtn").onclick = async () => {
+  if (!S.cur) return; const left = A().chars.filter(c => c.state === "proposed").length;
+  if (left && !(await askConfirm(`아직 확정하지 않은 제안이 ${left}자 있습니다. 그대로 제출하면 이 글자들은 학습 정답에서 빠집니다. 제출할까요?`, "그대로 제출"))) return;
+  A().status = "submitted"; A().submittedAt = new Date().toISOString(); logEdit("submit", A().itemId, null, {left}); S.dirty = true; await save();
+  toast("검수 완료로 제출했습니다");
+  if (!S.local) { const i = S.items.findIndex(x => x.id === S.prop.id); const nx = S.items.slice(i+1).concat(S.items.slice(0,i)).find(x => (S.statusById[x.id]||{}).status !== "submitted"); if (nx) openItem(nx.id); }
+};
+document.addEventListener("keydown", ev => {
+  const inField = ["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName);
+  if (inField) { if (ev.key === "Enter" && document.activeElement.id === "aVal") { document.activeElement.blur(); acceptSel(true); ev.preventDefault(); } if (ev.key === "Escape") document.activeElement.blur(); return; }
+  if (!S.cur) return;
+  const k = ev.key;
+  if ((ev.ctrlKey || ev.metaKey) && k.toLowerCase() === "z") { undo(); ev.preventDefault(); return; }
+  if (k.startsWith("Arrow") && (ev.shiftKey || ev.altKey)) {
+    const o = selectedBox(); if (!o) return; ev.preventDefault();
+    const st = Math.max(1, Math.round(2 / S.view.s)); const b = [...o.bbox];
+    const dx = k === "ArrowRight" ? st : k === "ArrowLeft" ? -st : 0, dy = k === "ArrowDown" ? st : k === "ArrowUp" ? -st : 0;
+    if (ev.shiftKey && ev.altKey) { b[0] += dx; b[1] += dy; setBox(o, b, "resize-lt"); }      // 왼쪽·위 변
+    else if (ev.shiftKey) { b[2] += dx; b[3] += dy; setBox(o, b, "resize-rb"); }               // 오른쪽·아래 변
+    else { b[0] += dx; b[2] += dx; b[1] += dy; b[3] += dy; setBox(o, b, "nudge"); }             // 옮기기
+    return;
+  }
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  const map = {
+    "1":()=>setMode("region"), "2":()=>setMode("line"), "3":()=>setMode("char"),
+    "ArrowDown":()=> S.mode==="char"?stepChar(1):stepLine(1), "ArrowRight":()=> S.mode==="char"?stepChar(1):stepLine(1),
+    "ArrowUp":()=> S.mode==="char"?stepChar(-1):stepLine(-1), "ArrowLeft":()=> S.mode==="char"?stepChar(-1):stepLine(-1),
+    "Tab":()=>stepLine(ev.shiftKey?-1:1), "Enter":()=>acceptSel(true), "a":acceptLine, "A":acceptLine,
+    "m":mergeNext, "M":mergeNext, "s":splitSel, "S":splitSel, "n":()=>setDraw(!S.draw), "N":()=>setDraw(!S.draw),
+    "r":resplitSel, "R":resplitSel, "Delete":deleteSel, "Backspace":deleteSel,
+    "e":()=>{ const v=$("aVal"); if (v){ v.focus(); v.select(); } }, "E":()=>{ const v=$("aVal"); if (v){ v.focus(); v.select(); } },
+    "+":()=>$("zoomIn").click(), "=":()=>$("zoomIn").click(), "-":()=>$("zoomOut").click(), "0":()=>{ fit(); render(); },
+    "f":()=>{ const o=selectedBox(); if (o) focusBox(o.bbox); }, "F":()=>{ const o=selectedBox(); if (o) focusBox(o.bbox); },
+    "t":()=>{ const o=selectedBox(); if (o) fitToInk(o); }, "T":()=>{ const o=selectedBox(); if (o) fitToInk(o); },
+    "?":()=>$("help").classList.toggle("open"), "Escape":()=>{ setDraw(false); $("help").classList.remove("open"); },
+    "[":()=>{ const i = curLineIndex(); if (i>=0) moveBreak(i,-1); }, "]":()=>{ const i = curLineIndex(); if (i>=0) moveBreak(i,1); }
+  };
+  if (map[k]) { map[k](); ev.preventDefault(); }
+});
+function curLineIndex(){ const rid = S.sel ? (S.sel.kind === "char" ? (charById(S.sel.id)||{}).rid : S.sel.id) : null; return lines().findIndex(r => r.id === rid); }
+window.addEventListener("resize", () => { if (S.prop) render(); });
+window.addEventListener("beforeunload", () => { if (S.dirty) save(); });
+boot();
+</script>
+</body>
+</html>

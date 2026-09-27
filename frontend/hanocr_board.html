@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HanOCR 성능 보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#EEF1F4; --panel:#FFFFFF; --panel-2:#F6F8FA; --line:#D5DBE2; --ink:#1C232B; --ink-2:#56616D; --ink-3:#8A95A1;
+  --indigo:#2F4B8A; --indigo-soft:#E4EAF6; --ok:#2E8B57; --mid:#C98A12; --low:#C8413B;
+  --c1:#9AA5B1; --c2:#C98A12; --c3:#2F4B8A;
+  --ui:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#171B20; --panel:#1F242B; --panel-2:#252B33; --line:#343C46; --ink:#E6EAEE; --ink-2:#A9B3BE; --ink-3:#7C8794;
+  --indigo:#8FA8E0; --indigo-soft:#27324A; --ok:#5BBE86; --mid:#E0AE45; --low:#E77069; --c1:#6B7684; --c2:#E0AE45; --c3:#8FA8E0; } }
+:root[data-theme="dark"]{ --bg:#171B20; --panel:#1F242B; --panel-2:#252B33; --line:#343C46; --ink:#E6EAEE; --ink-2:#A9B3BE; --ink-3:#7C8794;
+  --indigo:#8FA8E0; --indigo-soft:#27324A; --ok:#5BBE86; --mid:#E0AE45; --low:#E77069; --c1:#6B7684; --c2:#E0AE45; --c3:#8FA8E0; }
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--ui)}
+button,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--ink-3)}
+button.primary{background:var(--indigo);border-color:var(--indigo);color:#fff}
+button:focus-visible,input:focus-visible{outline:2px solid var(--indigo);outline-offset:1px}
+header{display:flex;align-items:center;gap:16px;padding:12px 22px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}
+header h1{font-size:16px;font-weight:600;margin:0}
+header .sub{color:var(--ink-2);font-size:12.5px}
+nav{display:flex;gap:4px;margin-left:auto}
+nav button[aria-selected="true"]{background:var(--indigo-soft);border-color:var(--indigo);color:var(--indigo)}
+main{max-width:1280px;margin:0 auto;padding:18px 22px 60px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .l{color:var(--ink-2);font-size:12.5px}
+.kpi .d{font-size:12px;margin-top:4px;color:var(--ink-3)}
+.kpi.wait .v{color:var(--ink-3);font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h2{font-size:14px;font-weight:600;margin:0 0 2px}
+.card .note{color:var(--ink-2);font-size:12.5px;margin:0 0 10px}
+.card.wide{grid-column:1/-1}
+.chart{position:relative;height:250px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--ink-2);font-weight:500;font-size:12px;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.tag.ok{border-color:var(--ok);color:var(--ok)} .tag.low{border-color:var(--low);color:var(--low)} .tag.mid{border-color:var(--mid);color:var(--mid)} .tag.ind{border-color:var(--indigo);color:var(--indigo)}
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alert{display:grid;grid-template-columns:8px 1fr;gap:10px;align-items:start;font-size:13px}
+.alert i{width:8px;height:8px;border-radius:50%;margin-top:6px}
+.lineage{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px}
+.lineage .node{border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:var(--panel-2)}
+.lineage .arr{color:var(--ink-3)}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:18px;color:var(--ink-2);font-size:13px;text-align:center}
+pre{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;overflow:auto;max-height:340px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.msg{font-size:12.5px;color:var(--ink-2)}
+.msg.err{color:var(--low)}
+.scroll{overflow-x:auto}
+@media (max-width: 900px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .grid{grid-template-columns:1fr} nav{margin-left:0} header{flex-wrap:wrap} }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>HanOCR 성능 보드</h1><div class="sub" id="sub">소장자료총서 1 · 정조어필 한글편지첩 검수 라운드</div></div>
+  <nav role="tablist">
+    <button role="tab" data-tab="ov" aria-selected="true">개요</button>
+    <button role="tab" data-tab="data" aria-selected="false">데이터 스냅샷</button>
+    <button role="tab" data-tab="runs" aria-selected="false">모델 실행</button>
+  </nav>
+  <button id="themeBtn" title="밝기 전환">◐</button>
+</header>
+
+<main>
+<!-- ───────── 개요 (S6) ───────── -->
+<section id="tab-ov">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div class="card">
+      <h2>제안기 버전별 상자 정확도</h2>
+      <p class="note">정답 상자와 IoU 0.5 이상 겹친 비율. <b>편지 3은 보정에 쓴 편지</b>(학습셋), 편지 1·2·4는 제안을 만들 때 쓰지 않은 편지(검증)입니다.</p>
+      <div class="chart"><canvas id="chProp"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>검수 효율</h2>
+      <p class="note">막대: 제안을 고치지 않고 확정한 비율. 선: 100자당 검수 시간(분). 편지 3은 이력이 잘려 시간을 계산할 수 없습니다.</p>
+      <div class="chart"><canvas id="chEff"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>OCR 모델 성능 추이 (고정 평가셋)</h2>
+      <p class="note">HRCNet(ResNet 백본) 실행 결과를 '모델 실행'에 등록하면 평가셋 글자 정확도와 CER이 여기에 쌓입니다.</p>
+      <div class="chart" id="runChartBox"><canvas id="chRuns"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>주의 신호</h2>
+      <p class="note">데이터·평가셋·검수에서 지금 확인할 것</p>
+      <div class="alerts" id="alerts"></div>
+    </div>
+    <div class="card wide">
+      <h2>편지별 결과</h2>
+      <p class="note">검수 한 번에 한 줄씩 쌓입니다. 제안 품질은 사람이 확정한 정답과 제안 원본을 비교한 값입니다.</p>
+      <div class="scroll"><table id="itemTable"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 데이터 스냅샷 (S7) ───────── -->
+<section id="tab-data" hidden>
+  <div class="grid">
+    <div class="card wide">
+      <h2>정답 스냅샷</h2>
+      <p class="note">학습·평가에 쓰는 정답의 고정본입니다. 모델 실행은 반드시 스냅샷 id와 내용 해시로 기록해 계보를 남깁니다.</p>
+      <div class="scroll"><table id="snapTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>계보</h2>
+      <p class="note">최신 스냅샷이 어디서 왔는지</p>
+      <div class="lineage" id="lineage"></div>
+      <h2 style="margin-top:16px">평가셋</h2>
+      <p class="note" id="evalNote"></p>
+    </div>
+    <div class="card">
+      <h2>학습셋 글자 빈도 (상위 25)</h2>
+      <p class="note">옛한글·자주 쓰는 글자에 쏠려 있는지 확인합니다.</p>
+      <div class="chart"><canvas id="chVocab"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 모델 실행 (S5 요약·레지스트리) ───────── -->
+<section id="tab-runs" hidden>
+  <div class="grid">
+    <div class="card wide">
+      <h2>실행 기록과 승격 판정</h2>
+      <p class="note">평가셋이 같고 챔피언보다 나빠지지 않은 실행만 '챔피언으로 지정'할 수 있습니다. 판정 기준: 글자 정확도 ≥ 챔피언, 옛한글 정확도 하락 2%p 이내, 평가셋 해시 일치.</p>
+      <div class="scroll"><table id="runTable"></table></div>
+      <div id="runEmpty" class="empty">아직 등록된 실행이 없습니다. HRCNet을 gold-r02로 평가하거나 미세조정한 뒤 결과 JSON을 등록하세요.</div>
+    </div>
+    <div class="card">
+      <h2>실행 결과 등록</h2>
+      <p class="note">GPU 환경에서 만든 결과 JSON 파일을 올립니다. 필수 항목을 확인한 뒤 저장합니다.</p>
+      <div class="row"><input type="file" id="runFile" accept=".json,application/json"><span class="msg" id="runMsg" aria-live="polite"></span></div>
+    </div>
+    <div class="card">
+      <h2>결과 JSON 형식</h2>
+      <p class="note">평가 스크립트가 이 형식으로 내보내면 됩니다.</p>
+<pre id="schema">{
+  "run_id": "hrcnet-r03-ft01",
+  "model": "HRCNet-ResNet50",
+  "base_checkpoint": "옛한글 사전학습 v1",
+  "mode": "finetune",            // "zero-shot" | "finetune"
+  "train_snapshot": "gold-r02",
+  "train_hash": "(manifest.json 의 content_hash)",
+  "eval_set": "eval-v1",
+  "eval_hash": "(평가셋 해시)",
+  "metrics": {
+    "char_acc": 0.812,           // 평가셋 글자 정확도 (top-1)
+    "top5_acc": 0.93,
+    "cer": 0.19,                 // 행 단위 CER (선택)
+    "old_hangul_acc": 0.70       // 옛한글 글자만
+  },
+  "per_item": [{"item": "kim-p2-letter02", "char_acc": 0.812}],
+  "config": {"epochs": 30, "lr": 0.0003, "augment": "rot±3,blur"},
+  "finished_at": "2026-09-20T10:00:00Z",
+  "notes": ""
+}</pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = v => v == null ? "—" : Math.round(v*100) + "%";
+const D = {rounds:[], snapshots:[], runs:[], meta:{}, stats:null, db:null, canWrite:true};
+const charts = {};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  ["ov","data","runs"].forEach(t => $("tab-" + t).hidden = t !== b.dataset.tab);
+  renderAll();
+});
+$("themeBtn").onclick = () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark"; renderAll(); };
+
+async function boot(){
+  renderAll();
+  if (!window.claude || !claude.use) { $("sub").textContent = "저장소에 연결되지 않은 보기입니다"; return; }
+  claude.use("user").then(async u => { if (!u) return; try { const w = await u.can("data.write"); if (w === false) D.canWrite = false; } catch(_){} renderRuns(); });
+  const db = await claude.use("db"); if (!db) { $("sub").textContent = "저장소를 쓸 수 없는 보기입니다"; return; }
+  D.db = db;
+  const sub = (col, key, sortKey) => db.collection(col).onSnapshot(q => { D[key] = q.docs.map(d => ({_id:d.id, ...d.data()})); if (sortKey) D[key].sort(sortKey); renderAll(); }, e => { $("sub").textContent = "불러오지 못했습니다 (" + e.code + ")"; });
+  sub("rounds", "rounds", (a,b) => (a.round - b.round) || (a.pdf_page - b.pdf_page));
+  sub("snapshots", "snapshots", (a,b) => String(a.created).localeCompare(String(b.created)));
+  sub("runs", "runs", (a,b) => String(a.finished_at||"").localeCompare(String(b.finished_at||"")));
+  db.doc("meta/board").onSnapshot(d => { D.meta = d.exists ? d.data() : {}; renderAll(); }, () => {});
+  db.doc("meta/data_stats").onSnapshot(d => { D.stats = d.exists ? d.data() : null; renderAll(); }, () => {});
+}
+
+function renderAll(){ renderKpis(); renderPropChart(); renderEffChart(); renderRunChart(); renderAlerts(); renderItems(); renderData(); renderRuns(); }
+
+function latestRound(){ return Math.max(0, ...D.rounds.map(r => r.round)); }
+function champion(){ return D.runs.find(r => r._id === D.meta.champion) || null; }
+function renderKpis(){
+  const R = D.rounds; const lr = latestRound(); const cur = R.filter(r => r.round === lr);
+  const evalItem = R.find(r => r.split === "eval");
+  const bestVer = evalItem ? Object.keys(evalItem.proposers || {}).sort().pop() : null;
+  const n = cur.reduce((s,r)=>s+r.chars,0), acc = cur.reduce((s,r)=>s+r.accepted,0);
+  const mins = cur.filter(r => r.review_min != null); const mm = mins.reduce((s,r)=>s+r.review_min,0), mn = mins.reduce((s,r)=>s+r.chars,0);
+  const snap = D.snapshots[D.snapshots.length-1];
+  const ch = champion();
+  const k = [
+    {l:"평가셋 제안 상자 정확도", v: evalItem && bestVer ? pct(evalItem.proposers[bestVer].iou50) : "—", d: evalItem ? `${evalItem.title} · 제안기 ${bestVer} · IoU≥0.5` : "평가셋 없음"},
+    {l:`라운드 ${lr} 무수정 확정률`, v: n ? pct(acc/n) : "—", d: `${acc} / ${n}자를 고치지 않고 확정`},
+    {l:"100자당 검수 시간", v: mn ? (mm/mn*100).toFixed(1) + "분" : "—", d: `라운드 ${lr} · 이력으로 계산`},
+    {l:"학습 정답 글자", v: snap ? snap.counts.chars : "—", d: snap ? `${snap._id} · 학습 ${snap.counts.train} / 평가 ${snap.counts.eval}` : ""},
+    ch ? {l:"OCR 글자 정확도 (챔피언)", v: pct(ch.metrics.char_acc), d: `${ch.model} · ${ch._id}`} : {l:"OCR 글자 정확도", v:"결과 대기", d:"HRCNet 결과를 등록하세요", wait:true}
+  ];
+  $("kpis").innerHTML = k.map(x => `<div class="kpi ${x.wait?"wait":""}"><div class="l">${esc(x.l)}</div><div class="v">${esc(x.v)}</div><div class="d">${esc(x.d)}</div></div>`).join("");
+}
+function mk(id, cfg){
+  if (typeof Chart === "undefined") return;
+  if (charts[id]) charts[id].destroy();
+  Chart.defaults.color = css("--ink-2"); Chart.defaults.borderColor = css("--line"); Chart.defaults.font.family = css("--ui");
+  charts[id] = new Chart($(id), cfg);
+}
+function renderPropChart(){
+  if ($("tab-ov").hidden) return;
+  const R = D.rounds; const vers = [...new Set(R.flatMap(r => Object.keys(r.proposers||{})))].sort();
+  const col = [css("--c1"), css("--c2"), css("--c3"), css("--ok")];
+  mk("chProp", {type:"bar", data:{labels:R.map(r => r.title + (r.split==="eval"?" (평가)":r.round===1?" (보정용)":"")),
+    datasets: vers.map((v,i) => ({label:"제안기 " + v, data:R.map(r => r.proposers && r.proposers[v] ? Math.round(r.proposers[v].iou50*100) : null), backgroundColor:col[i%col.length]}))},
+    options:{maintainAspectRatio:false, scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%"}}}, plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}%`}}}}});
+}
+function renderEffChart(){
+  if ($("tab-ov").hidden) return;
+  const R = D.rounds;
+  mk("chEff", {data:{labels:R.map(r => r.title), datasets:[
+      {type:"bar", label:"무수정 확정률", data:R.map(r => Math.round(r.accept_rate*100)), backgroundColor:css("--c3"), yAxisID:"y"},
+      {type:"line", label:"100자당 검수 시간(분)", data:R.map(r => r.min_per_100), borderColor:css("--mid"), backgroundColor:css("--mid"), yAxisID:"y2", spanGaps:false}]},
+    options:{maintainAspectRatio:false, scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%"}}, y2:{position:"right",min:0,grid:{drawOnChartArea:false}}}}});
+}
+function renderRunChart(){
+  if ($("tab-ov").hidden) return;
+  const runs = D.runs.filter(r => r.metrics && r.eval_set === (D.meta.eval_set || "eval-v1"));
+  if (!runs.length) { if (charts.chRuns) { charts.chRuns.destroy(); delete charts.chRuns; }
+    $("runChartBox").innerHTML = '<div class="empty" style="height:100%;display:grid;place-items:center">아직 실행 결과가 없습니다.<br>첫 결과로는 사전학습 HRCNet을 그대로 평가셋에 돌린 기준선(zero-shot)을 권합니다.</div>'; return; }
+  if (!$("chRuns")) $("runChartBox").innerHTML = '<canvas id="chRuns"></canvas>';
+  mk("chRuns", {type:"line", data:{labels:runs.map(r => r._id), datasets:[
+      {label:"글자 정확도", data:runs.map(r => r.metrics.char_acc != null ? +(r.metrics.char_acc*100).toFixed(1) : null), borderColor:css("--c3"), backgroundColor:css("--c3")},
+      {label:"옛한글 정확도", data:runs.map(r => r.metrics.old_hangul_acc != null ? +(r.metrics.old_hangul_acc*100).toFixed(1) : null), borderColor:css("--mid"), backgroundColor:css("--mid")},
+      {label:"CER", data:runs.map(r => r.metrics.cer != null ? +(r.metrics.cer*100).toFixed(1) : null), borderColor:css("--low"), backgroundColor:css("--low"), borderDash:[5,4]}]},
+    options:{maintainAspectRatio:false, scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%"}}}}});
+}
+function renderAlerts(){
+  const A = [];
+  const R = D.rounds;
+  for (const r of R) for (const [v,m] of Object.entries(r.proposers||{})) if (v === Object.keys(r.proposers).sort().pop() && m.iou50 < .3 && r.split !== "eval" && r.round > 1)
+    A.push(["low", `${r.title}: 최신 제안기(${v}) 상자 정확도 ${pct(m.iou50)} — 행 배정이 실패한 편지입니다. 흘림 행 검출을 개선할 대표 사례로 쓰세요.`]);
+  const ev = R.filter(r => r.split === "eval"); const evn = ev.reduce((s,r)=>s+r.gold,0);
+  if (evn < 200) A.push(["mid", `평가셋이 ${evn}자뿐입니다. 한두 글자 차이로 정확도가 3%p 넘게 흔들립니다. 편지 13을 평가셋에 추가하는 것을 권합니다.`]);
+  if (D.stats && D.stats.eval_unseen_classes && D.stats.eval_unseen_classes.length) A.push(["mid", `평가셋에만 있는 글자 ${D.stats.eval_unseen_classes.length}종(${D.stats.eval_unseen_classes.join(", ")}) — 미세조정만으로는 맞힐 수 없으니 사전학습 모델 성능으로 따로 보고하세요.`]);
+  const pend = (D.meta.pending_items || []); if (pend.length) A.push(["ind", `검수 대기: ${pend.join(", ")}`]);
+  if (!D.runs.length) A.push(["ind", "OCR 모델 실행 기록이 없습니다. HRCNet 기준선부터 등록하면 이후 미세조정 효과를 같은 잣대로 비교할 수 있습니다."]);
+  $("alerts").innerHTML = A.map(([k,t]) => `<div class="alert"><i style="background:var(--${k==="ind"?"indigo":k})"></i><div>${esc(t)}</div></div>`).join("") || '<div class="msg">지금은 주의할 신호가 없습니다.</div>';
+}
+function renderItems(){
+  const R = D.rounds; const vers = [...new Set(R.flatMap(r => Object.keys(r.proposers||{})))].sort();
+  $("itemTable").innerHTML = `<thead><tr><th>편지</th><th>라운드</th><th>용도</th><th class="num">글자</th><th class="num">무수정 확정</th><th class="num">수정</th><th class="num">값 수정</th><th class="num">검수(분)</th>${vers.map(v => `<th class="num">${v} IoU≥.5</th><th class="num">${v} 평균 IoU</th>`).join("")}</tr></thead><tbody>` +
+    R.map(r => `<tr><td>${esc(r.title)} <span class="msg">PDF ${r.pdf_page}</span></td><td>${r.round}</td><td>${r.split==="eval"?'<span class="tag ind">평가(고정)</span>':r.round===1?'<span class="tag">학습 · 보정에 사용</span>':'<span class="tag ok">학습</span>'}</td>
+      <td class="num">${r.chars}</td><td class="num">${r.accepted} (${pct(r.accept_rate)})</td><td class="num">${r.corrected}</td><td class="num">${r.text_edits}</td><td class="num">${r.review_min ?? "—"}</td>
+      ${vers.map(v => { const m = (r.proposers||{})[v]; return m ? `<td class="num">${pct(m.iou50)}</td><td class="num">${m.mean_iou.toFixed(2)}</td>` : '<td class="num">—</td><td class="num">—</td>'; }).join("")}</tr>`).join("") + "</tbody>";
+}
+function renderData(){
+  if ($("tab-data").hidden) return;
+  const S = D.snapshots;
+  $("snapTable").innerHTML = `<thead><tr><th>스냅샷</th><th>만든 날</th><th>편지</th><th class="num">글자</th><th class="num">학습</th><th class="num">평가</th><th class="num">완전한 행</th><th class="num">글자 종류</th><th>내용 해시</th><th>비고</th></tr></thead><tbody>` +
+    S.map(s => `<tr><td><b>${esc(s._id)}</b></td><td>${esc(s.created)}</td><td>${esc((s.items||[]).map(i => i.replace("kim-p2-letter","편지 ").replace(/편지 0/,"편지 ")).join(", "))}</td>
+      <td class="num">${s.counts.chars}</td><td class="num">${s.counts.train}</td><td class="num">${s.counts.eval}</td><td class="num">${s.counts.lines_complete ?? "—"}</td><td class="num">${s.counts.glyph_classes ?? "—"}</td>
+      <td><code>${esc(s.content_hash||"")}</code></td><td class="msg">${esc(s.note||"")}</td></tr>`).join("") + "</tbody>";
+  const s = S[S.length-1];
+  $("lineage").innerHTML = s ? [`S2 편집기 검수 (${(s.items||[]).length}통)`, `확정·수정 글자만 (${s.excluded||"제외 없음"})`, `${s._id} · ${s.content_hash}`, "HRCNet 미세조정·평가", "성능 보드"]
+    .map((t,i,a) => `<span class="node">${esc(t)}</span>${i<a.length-1?'<span class="arr">→</span>':""}`).join("") : "";
+  const ev = D.rounds.filter(r => r.split === "eval");
+  $("evalNote").textContent = `${D.meta.eval_set || "eval-v1"}: ${ev.map(r => r.title).join(", ") || "없음"} · ${ev.reduce((a,r)=>a+r.gold,0)}자` + (D.stats ? ` · 학습셋이 평가셋 글자의 ${pct(D.stats.eval_coverage_by_train)}를 포함` : "") + ". 평가셋은 학습에 섞지 않고, 바꿀 때는 새 이름(eval-v2)으로 만듭니다.";
+  if (D.stats && D.stats.train_top) mk("chVocab", {type:"bar", data:{labels:D.stats.train_top.map(x => x[0]), datasets:[{label:"학습셋 글자 수", data:D.stats.train_top.map(x => x[1]), backgroundColor:css("--c3")}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{font:{size:13}}}}}});
+}
+function gate(r){
+  const ch = champion(); const evalSet = D.meta.eval_set || "eval-v1";
+  if (r.eval_set !== evalSet) return {ok:false, why:`평가셋이 다름 (${r.eval_set})`};
+  if (D.meta.eval_hash && r.eval_hash && r.eval_hash !== D.meta.eval_hash) return {ok:false, why:"평가셋 해시 불일치"};
+  if (!ch || ch._id === r._id) return {ok:true, why: ch ? "현재 챔피언" : "첫 기준"};
+  const m = r.metrics||{}, c = ch.metrics||{};
+  if (m.char_acc < c.char_acc) return {ok:false, why:`글자 정확도 하락 ${((c.char_acc-m.char_acc)*100).toFixed(1)}%p`};
+  if (m.old_hangul_acc != null && c.old_hangul_acc != null && c.old_hangul_acc - m.old_hangul_acc > .02) return {ok:false, why:"옛한글 정확도 2%p 넘게 하락"};
+  return {ok:true, why:`+${((m.char_acc-c.char_acc)*100).toFixed(1)}%p`};
+}
+function renderRuns(){
+  if ($("tab-runs").hidden) return;
+  const runs = D.runs; $("runEmpty").hidden = runs.length > 0; $("runTable").hidden = !runs.length;
+  if (!runs.length) return;
+  $("runTable").innerHTML = `<thead><tr><th>실행</th><th>모델</th><th>방식</th><th>학습 스냅샷</th><th>평가셋</th><th class="num">글자 정확도</th><th class="num">옛한글</th><th class="num">CER</th><th>판정</th><th></th></tr></thead><tbody>` +
+    runs.map(r => { const g = gate(r); const isCh = D.meta.champion === r._id; const m = r.metrics || {};
+      return `<tr><td><b>${esc(r._id)}</b><div class="msg">${esc(r.finished_at||"")}</div></td><td>${esc(r.model)}<div class="msg">${esc(r.base_checkpoint||"")}</div></td><td>${esc(r.mode||"")}</td>
+      <td>${esc(r.train_snapshot||"—")}</td><td>${esc(r.eval_set)}</td><td class="num">${pct(m.char_acc)}</td><td class="num">${pct(m.old_hangul_acc)}</td><td class="num">${m.cer!=null?pct(m.cer):"—"}</td>
+      <td>${isCh?'<span class="tag ok">챔피언</span>':g.ok?`<span class="tag ok">승격 가능 · ${esc(g.why)}</span>`:`<span class="tag low">${esc(g.why)}</span>`}</td>
+      <td>${!isCh && g.ok && D.canWrite ? `<button data-champ="${esc(r._id)}">챔피언으로 지정</button>` : ""}</td></tr>`; }).join("") + "</tbody>";
+  $("runTable").querySelectorAll("[data-champ]").forEach(b => b.onclick = async () => {
+    try { await D.db.doc("meta/board").set({...D.meta, champion:b.dataset.champ, champion_at:new Date().toISOString()}); }
+    catch(e){ $("runMsg").textContent = "지정하지 못했습니다 (" + e.code + ")"; $("runMsg").className = "msg err"; }
+  });
+}
+$("runFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return; const m = $("runMsg"); m.className = "msg";
+  let r; try { r = JSON.parse(await f.text()); } catch(_) { m.textContent = "JSON을 읽지 못했습니다."; m.className = "msg err"; return; }
+  const need = ["run_id","model","eval_set","metrics"]; const miss = need.filter(k => !(k in r));
+  if (miss.length) { m.textContent = "빠진 항목: " + miss.join(", "); m.className = "msg err"; return; }
+  if (typeof r.metrics.char_acc !== "number" || r.metrics.char_acc < 0 || r.metrics.char_acc > 1) { m.textContent = "metrics.char_acc 는 0~1 사이 숫자여야 합니다."; m.className = "msg err"; return; }
+  if (!/^[A-Za-z0-9_.\-]{1,120}$/.test(r.run_id)) { m.textContent = "run_id 는 영문·숫자·_.- 만 쓸 수 있습니다."; m.className = "msg err"; return; }
+  if (!D.db || !D.canWrite) { m.textContent = "이 보기에서는 저장할 수 없습니다."; m.className = "msg err"; return; }
+  const {run_id, ...body} = r;
+  try { await D.db.doc("runs/" + run_id).set({...body, registered_at:new Date().toISOString()}); m.textContent = `${run_id} 등록했습니다.`; e.target.value = ""; }
+  catch(err){ m.textContent = "저장하지 못했습니다 (" + (err && err.code) + ")"; m.className = "msg err"; }
+};
+boot();
+</script>
+</body>
+</html>
